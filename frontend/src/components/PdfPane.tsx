@@ -14,6 +14,7 @@ interface Props {
   questions: Question[];
   selectedQuestionId: string | null;
   onSelectQuestion: (id: string) => void;
+  previewUnavailable?: boolean;
 }
 
 export function PdfPane({
@@ -25,6 +26,7 @@ export function PdfPane({
   questions,
   selectedQuestionId,
   onSelectQuestion,
+  previewUnavailable,
 }: Props) {
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [numPages, setNumPages] = useState(0);
@@ -33,6 +35,7 @@ export function PdfPane({
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
+    if (previewUnavailable) return;
     let cancelled = false;
     pdfjsLib.getDocument(pdfUrl(jobId, fileId)).promise.then((loaded) => {
       if (cancelled) return;
@@ -44,10 +47,10 @@ export function PdfPane({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobId, fileId]);
+  }, [jobId, fileId, previewUnavailable]);
 
   useEffect(() => {
-    if (!doc) return;
+    if (!doc || previewUnavailable) return;
     let cancelled = false;
     doc.getPage(page).then(async (pdfPage) => {
       const viewport = pdfPage.getViewport({ scale });
@@ -66,6 +69,19 @@ export function PdfPane({
   }, [doc, page, scale]);
 
   const pageQuestions = questions.filter((q) => q.page === page && !q.skipped);
+
+  if (previewUnavailable) {
+    return (
+      <div className="pdf-pane">
+        <div className="pdf-pane-unavailable text-soft">
+          This is a dynamic (XFA) PDF form — its real layout lives in Adobe's proprietary
+          renderer, so no page preview is available here. Questions were extracted from the
+          form's embedded field definitions instead; use the type dropdown and label to
+          verify each one against the source PDF.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pdf-pane">

@@ -5,6 +5,7 @@
   flex-direction: column;
   gap: var(--sp-2);
   min-width: 0;
+  min-height: 0;
 }
 
 .pdf-pane-toolbar {
@@ -47,6 +48,17 @@
   border-color: var(--acc);
   border-width: 2px;
   background: var(--gold-tint);
+}
+
+.pdf-pane-unavailable {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--sp-6);
+  border: 1px dashed var(--line);
+  background: var(--surface);
 }
 
 .pdf-pane-nav {

@@ -76,41 +76,43 @@ function App() {
       <AppBar />
       {step < 4 && <Stepper step={step} />}
 
-      {step === 1 && (
-        <UploadStep
-          files={pendingFiles}
-          onFilesAdded={mergePendingFiles}
-          onRemove={(id) => setPendingFiles((prev) => prev.filter((f) => f.localId !== id))}
-          onCancel={() => setPendingFiles([])}
-          onNext={() => setStep(2)}
-        />
-      )}
+      <main className="app-main">
+        {step === 1 && (
+          <UploadStep
+            files={pendingFiles}
+            onFilesAdded={mergePendingFiles}
+            onRemove={(id) => setPendingFiles((prev) => prev.filter((f) => f.localId !== id))}
+            onCancel={() => setPendingFiles([])}
+            onNext={() => setStep(2)}
+          />
+        )}
 
-      {step === 2 && (
-        <TemplateStep
-          templates={templates}
-          selectedId={templateId}
-          onSelect={setTemplateId}
-          onTemplateUploaded={(t) => setTemplates((prev) => [...prev, t])}
-          fileCount={pendingFiles.filter((f) => !f.error).length}
-          onBack={() => setStep(1)}
-          onConvert={handleConvert}
-        />
-      )}
+        {step === 2 && (
+          <TemplateStep
+            templates={templates}
+            selectedId={templateId}
+            onSelect={setTemplateId}
+            onTemplateUploaded={(t) => setTemplates((prev) => [...prev, t])}
+            fileCount={pendingFiles.filter((f) => !f.error).length}
+            onBack={() => setStep(1)}
+            onConvert={handleConvert}
+          />
+        )}
 
-      {step === 3 && job && <ProcessingStep files={job.files} />}
+        {step === 3 && job && <ProcessingStep files={job.files} />}
 
-      {step === 4 && job && reviewableFiles.length > 0 && (
-        <ReviewStep
-          jobId={job.id}
-          templateName={selectedTemplate?.name ?? ""}
-          files={reviewableFiles}
-          activeIndex={Math.min(activeReviewIndex, reviewableFiles.length - 1)}
-          onActiveIndexChange={setActiveReviewIndex}
-          reviewedFileIds={reviewedFileIds}
-          onMarkReviewed={(fileId) => setReviewedFileIds((prev) => new Set(prev).add(fileId))}
-        />
-      )}
+        {step === 4 && job && reviewableFiles.length > 0 && (
+          <ReviewStep
+            jobId={job.id}
+            templateName={selectedTemplate?.name ?? ""}
+            files={reviewableFiles}
+            activeIndex={Math.min(activeReviewIndex, reviewableFiles.length - 1)}
+            onActiveIndexChange={setActiveReviewIndex}
+            reviewedFileIds={reviewedFileIds}
+            onMarkReviewed={(fileId) => setReviewedFileIds((prev) => new Set(prev).add(fileId))}
+          />
+        )}
+      </main>
     </div>
   );
 }

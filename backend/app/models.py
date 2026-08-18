@@ -2,7 +2,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel
 
-FileKind = Literal["acroform", "text"]
+FileKind = Literal["acroform", "xfa", "text"]
 FileStatus = Literal["queued", "parsing", "matching", "done", "failed"]
 XLSFormType = Literal[
     "text", "integer", "decimal", "date", "select_one", "select_multiple",

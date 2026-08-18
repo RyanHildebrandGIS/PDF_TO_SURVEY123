@@ -49,6 +49,14 @@ def build_template_meta(template_id: str, name: str, path: str) -> TemplateMeta:
                 geopoint_required = True
                 break
 
+    if "settings" in wb.sheetnames:
+        settings_header = _header(wb["settings"])
+        title_idx = next((i for i, col in enumerate(settings_header) if col.lower() == "form_title"), None)
+        if title_idx is not None:
+            first_row = next(wb["settings"].iter_rows(min_row=2, max_row=2, values_only=True), None)
+            if first_row and len(first_row) > title_idx and first_row[title_idx]:
+                name = str(first_row[title_idx]).strip()
+
     return TemplateMeta(
         id=template_id,
         name=name,

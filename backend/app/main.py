@@ -183,11 +183,6 @@ def export_file(job_id: str, file_id: str) -> dict:
     if template is None:
         raise HTTPException(status_code=404, detail="Template not found")
 
-    if template.meta.geopoint_required and not any(
-        q.type == "geopoint" and q.confirmed and not q.skipped for q in file_record.questions
-    ):
-        raise HTTPException(status_code=400, detail="Template requires a confirmed geopoint question")
-
     try:
         content = export_workbook(template.path, file_record.questions)
     except InvalidTemplateError as exc:

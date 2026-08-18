@@ -1,4 +1,4 @@
-export type FileKind = "acroform" | "text";
+export type FileKind = "acroform" | "xfa" | "text";
 export type FileStatus = "queued" | "parsing" | "matching" | "done" | "failed";
 export type XLSFormType =
   | "text"

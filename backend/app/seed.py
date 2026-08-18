@@ -27,6 +27,6 @@ def build_sample_template(path: str) -> None:
 
     settings = wb.create_sheet("settings")
     settings.append(["form_title", "form_id"])
-    settings.append(["Standard Inspection", "standard_inspection_v4"])
+    settings.append(["Standard Inspection v4", "standard_inspection_v4"])
 
     wb.save(path)
