@@ -4,6 +4,7 @@ import os
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from fastapi.staticfiles import StaticFiles
 
 from .models import FileMeta, JobStatus, Question, QuestionPatch, StartJobRequest, TemplateMeta
 from .pdf_extraction import detect_kind, extract_questions
@@ -13,6 +14,12 @@ from .xlsform import InvalidTemplateError, build_template_meta, export_workbook
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "templates")
 SAMPLE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "..", "sample_templates", "standard_inspection_v4.xlsx")
+# The built frontend (`npm run build` in frontend/) — served directly so the whole
+# tool runs as a single process. FRONTEND_DIST lets a container image point this
+# somewhere other than the repo-relative default (see Dockerfile).
+FRONTEND_DIST = os.environ.get(
+    "FRONTEND_DIST", os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+)
 
 app = FastAPI(title="PDF to Survey123 Converter")
 
@@ -204,3 +211,8 @@ def download_export(export_id: str) -> Response:
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{export_record.filename}"'},
     )
+
+
+# Registered last so it only catches requests that don't match an API route above.
+if os.path.isdir(FRONTEND_DIST):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

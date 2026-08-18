@@ -1,6 +1,9 @@
 import type { JobStatus, Question, QuestionPatch, TemplateMeta } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
+// Empty string = relative to the current origin, i.e. "the backend serving this page".
+// Overridden for `npm run dev` via .env.development, where frontend and backend run
+// as separate processes on different ports.
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 async function json<T>(res: Response): Promise<T> {
   if (!res.ok) {
