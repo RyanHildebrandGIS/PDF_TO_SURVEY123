@@ -37,6 +37,33 @@
   min-height: 0;
 }
 
+.review-base-questions {
+  border-bottom: 1px dashed var(--line);
+}
+
+.review-base-questions summary {
+  padding: var(--sp-3) var(--sp-4);
+  cursor: pointer;
+}
+
+.review-base-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 160px;
+  overflow: auto;
+  padding: 0 var(--sp-4) var(--sp-3);
+}
+
+.review-base-row {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-1) 0;
+}
+
+.review-new-label {
+  padding: var(--sp-3) var(--sp-4) 0;
+}
+
 .review-filters {
   display: flex;
   gap: var(--sp-2);

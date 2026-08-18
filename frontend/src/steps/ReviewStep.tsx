@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { FileMeta, Question, QuestionPatch } from "../types";
-import { downloadExportUrl, exportFile, getQuestions, patchQuestion } from "../api";
+import type { BaseQuestion, FileMeta, Question, QuestionPatch } from "../types";
+import { downloadExportUrl, exportFile, getQuestions, listBaseQuestions, patchQuestion } from "../api";
 import { PdfPane } from "../components/PdfPane";
 import { QuestionRow } from "../components/QuestionRow";
 import "./ReviewStep.css";
@@ -10,6 +10,7 @@ const LOW_CONFIDENCE = 0.6;
 
 interface Props {
   jobId: string;
+  templateId: string;
   templateName: string;
   files: FileMeta[];
   activeIndex: number;
@@ -20,6 +21,7 @@ interface Props {
 
 export function ReviewStep({
   jobId,
+  templateId,
   templateName,
   files,
   activeIndex,
@@ -29,6 +31,7 @@ export function ReviewStep({
 }: Props) {
   const file = files[activeIndex];
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [baseQuestions, setBaseQuestions] = useState<BaseQuestion[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -45,6 +48,11 @@ export function ReviewStep({
     getQuestions(jobId, file.id).then(setQuestions);
   }, [jobId, file.id]);
 
+  useEffect(() => {
+    if (!templateId) return;
+    listBaseQuestions(templateId).then(setBaseQuestions);
+  }, [templateId]);
+
   function applyPatch(questionId: string, patch: QuestionPatch) {
     setQuestions((qs) => qs.map((q) => (q.id === questionId ? { ...q, ...patch } : q)));
     patchQuestion(jobId, file.id, questionId, patch).catch(() => {
@@ -54,13 +62,27 @@ export function ReviewStep({
 
   const lowCount = questions.filter((q) => !q.skipped && q.confidence < LOW_CONFIDENCE).length;
   const skippedCount = questions.filter((q) => q.skipped).length;
+  const unconfirmedCount = questions.filter((q) => !q.skipped && !q.confirmed).length;
+  const confirmedCount = questions.filter((q) => !q.skipped && q.confirmed).length;
   const visible = questions.filter((q) => {
     if (filter === "low") return !q.skipped && q.confidence < LOW_CONFIDENCE;
     if (filter === "skipped") return q.skipped;
     return true;
   });
 
+  function handleConfirmAll() {
+    for (const q of questions) {
+      if (!q.skipped && !q.confirmed) applyPatch(q.id, { confirmed: true });
+    }
+  }
+
   async function handleExport() {
+    if (confirmedCount === 0) {
+      setExportError(
+        "Nothing is confirmed yet — export only includes confirmed questions. Use \"Confirm all\" or confirm rows individually first.",
+      );
+      return;
+    }
     setExporting(true);
     setExportError(null);
     try {
@@ -88,6 +110,11 @@ export function ReviewStep({
           <span className="pill pill-flag">
             {lowCount} low confidence
           </span>
+        )}
+        {unconfirmedCount > 0 && (
+          <button className="btn" onClick={handleConfirmAll}>
+            Confirm all {unconfirmedCount}
+          </button>
         )}
         <button className="btn btn-primary" disabled={exporting} onClick={handleExport}>
           {exporting ? "Exporting…" : "Export .xlsx"}
@@ -122,6 +149,25 @@ export function ReviewStep({
         />
 
         <div className="review-questions">
+          {baseQuestions.length > 0 && (
+            <details className="review-base-questions">
+              <summary className="text-soft">
+                {baseQuestions.length} question{baseQuestions.length === 1 ? "" : "s"} already in this
+                template (unchanged)
+              </summary>
+              <div className="review-base-list">
+                {baseQuestions.map((q, i) => (
+                  <div key={i} className="review-base-row">
+                    <span className="text" style={{ flex: 1 }}>
+                      {q.label}
+                    </span>
+                    <span className="text-soft">{q.type}</span>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+          <div className="review-new-label label">New from this PDF</div>
           <div className="review-filters">
             <span className={`pill ${filter === "all" ? "pill-ink" : ""}`} onClick={() => setFilter("all")}>
               All {questions.length}

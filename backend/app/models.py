@@ -18,6 +18,12 @@ class TemplateMeta(BaseModel):
     geopoint_required: bool
 
 
+class BaseQuestion(BaseModel):
+    type: str
+    name: str
+    label: str
+
+
 class FileMeta(BaseModel):
     id: str
     name: str

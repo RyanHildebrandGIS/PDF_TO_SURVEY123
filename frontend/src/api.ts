@@ -1,4 +1,4 @@
-import type { JobStatus, Question, QuestionPatch, TemplateMeta } from "./types";
+import type { BaseQuestion, JobStatus, Question, QuestionPatch, TemplateMeta } from "./types";
 
 // Empty string = relative to the current origin, i.e. "the backend serving this page".
 // Overridden for `npm run dev` via .env.development, where frontend and backend run
@@ -15,6 +15,10 @@ async function json<T>(res: Response): Promise<T> {
 
 export function listTemplates(): Promise<TemplateMeta[]> {
   return fetch(`${API_BASE}/templates`).then((r) => json(r));
+}
+
+export function listBaseQuestions(templateId: string): Promise<BaseQuestion[]> {
+  return fetch(`${API_BASE}/templates/${templateId}/base-questions`).then((r) => json(r));
 }
 
 export function uploadTemplate(file: File): Promise<TemplateMeta> {

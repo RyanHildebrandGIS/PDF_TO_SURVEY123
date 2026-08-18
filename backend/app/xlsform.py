@@ -1,8 +1,15 @@
 import io
+import re
 
 import openpyxl
 
 from .models import Question, TemplateMeta
+
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _strip_html(text: str) -> str:
+    return _HTML_TAG_RE.sub("", text).strip()
 
 PLACEHOLDER_GROUP_NAME = "grp_form_content"
 
@@ -123,6 +130,38 @@ def _build_survey_rows(questions: list[Question]) -> list[dict[str, str]]:
             rows.append({"type": _question_row_type(q), "name": q.name, "label": q.label})
         if use_subgroups:
             rows.append({"type": "end group"})
+    return rows
+
+
+def list_base_questions(template_path: str) -> list[dict[str, str]]:
+    """The template's own fixed survey rows — everything outside the grp_form_content
+    placeholder — so the reviewer can see what's already in the template as distinct
+    from what this PDF is about to add."""
+    wb = openpyxl.load_workbook(template_path, data_only=True)
+    if "survey" not in wb.sheetnames:
+        return []
+    ws = wb["survey"]
+    header = _header(ws)
+    col_idx = {name.lower(): i + 1 for i, name in enumerate(header)}
+    if "type" not in col_idx or "name" not in col_idx:
+        return []
+    label_col = col_idx.get("label")
+
+    placeholder = _find_placeholder_group(ws, col_idx)
+    skip_rows = set(range(placeholder[0], placeholder[1] + 1)) if placeholder else set()
+
+    rows: list[dict[str, str]] = []
+    for r in range(2, ws.max_row + 1):
+        if r in skip_rows:
+            continue
+        raw_type = ws.cell(row=r, column=col_idx["type"]).value
+        t = str(raw_type or "").strip()
+        if not t or t.lower() in ("begin group", "end group", "begin repeat", "end repeat"):
+            continue
+        n = str(ws.cell(row=r, column=col_idx["name"]).value or "").strip()
+        label_val = ws.cell(row=r, column=label_col).value if label_col else None
+        label = _strip_html(str(label_val)) if label_val else n
+        rows.append({"type": t, "name": n, "label": label or n})
     return rows
 
 

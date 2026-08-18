@@ -6,11 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
-from .models import FileMeta, JobStatus, Question, QuestionPatch, StartJobRequest, TemplateMeta
+from .models import BaseQuestion, FileMeta, JobStatus, Question, QuestionPatch, StartJobRequest, TemplateMeta
 from .pdf_extraction import detect_kind, extract_questions
 from .seed import build_sample_template
 from .storage import ExportRecord, FileRecord, JobRecord, TemplateRecord, store
-from .xlsform import InvalidTemplateError, build_template_meta, export_workbook
+from .xlsform import InvalidTemplateError, build_template_meta, export_workbook, list_base_questions
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "templates")
 SAMPLE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "..", "sample_templates", "standard_inspection_v4.xlsx")
@@ -47,6 +47,14 @@ def health() -> dict:
 @app.get("/templates", response_model=list[TemplateMeta])
 def list_templates() -> list[TemplateMeta]:
     return [record.meta for record in store.templates.values()]
+
+
+@app.get("/templates/{template_id}/base-questions", response_model=list[BaseQuestion])
+def get_template_base_questions(template_id: str) -> list[BaseQuestion]:
+    record = store.templates.get(template_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return [BaseQuestion(**row) for row in list_base_questions(record.path)]
 
 
 @app.post("/templates", response_model=TemplateMeta)

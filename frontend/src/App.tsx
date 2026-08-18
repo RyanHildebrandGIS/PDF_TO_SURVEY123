@@ -104,6 +104,7 @@ function App() {
         {step === 4 && job && reviewableFiles.length > 0 && (
           <ReviewStep
             jobId={job.id}
+            templateId={job.template_id ?? ""}
             templateName={selectedTemplate?.name ?? ""}
             files={reviewableFiles}
             activeIndex={Math.min(activeReviewIndex, reviewableFiles.length - 1)}

@@ -31,6 +31,15 @@ export interface FileMeta {
   error: string | null;
 }
 
+/** A row already in the template's survey sheet, outside the grp_form_content
+ * placeholder — shown read-only in Review so it's clear what's already there
+ * versus what this PDF is adding. */
+export interface BaseQuestion {
+  type: string;
+  name: string;
+  label: string;
+}
+
 export interface JobStatus {
   id: string;
   template_id: string | null;
