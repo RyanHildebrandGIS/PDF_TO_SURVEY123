@@ -13,8 +13,9 @@ def build_sample_template(path: str) -> None:
     survey.title = "survey"
     survey.append(["type", "name", "label", "required", "appearance"])
     survey.append(["geopoint", "site_location", "Site location", "yes", ""])
-    survey.append(["select_one condition", "overall_condition", "Overall condition", "yes", ""])
     survey.append(["select_one yes_no", "access_ok", "Site access OK?", "no", ""])
+    survey.append(["begin group", "grp_form_content", "<b>[Form-Specific Content]</b>", "", ""])
+    survey.append(["end group", "", "", "", ""])
     survey.append(["text", "inspector_notes", "Inspector notes", "no", "multiline"])
 
     choices = wb.create_sheet("choices")

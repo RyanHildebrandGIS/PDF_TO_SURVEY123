@@ -52,6 +52,7 @@ class QuestionPatch(BaseModel):
     choice_list_id: Optional[str] = None
     confirmed: Optional[bool] = None
     skipped: Optional[bool] = None
+    skip_reason: Optional[str] = None
 
 
 class StartJobRequest(BaseModel):

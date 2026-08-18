@@ -1,0 +1,51 @@
+.q-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--track);
+  cursor: pointer;
+}
+
+.q-row:hover {
+  background: var(--ground);
+}
+
+.q-row-selected {
+  background: var(--gold-tint);
+}
+
+.q-row-flag {
+  background: rgba(242, 169, 0, 0.09);
+  border-left: 3px solid var(--gold);
+}
+
+.q-row-skipped {
+  opacity: 0.55;
+}
+
+.q-row-index {
+  width: 18px;
+  flex: none;
+}
+
+.q-row-edit {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.q-row-list {
+  width: 110px;
+}
+
+.q-row-skip,
+.q-row-undo {
+  color: var(--soft);
+  cursor: pointer;
+  flex: none;
+}
+
+.q-row-skip:hover,
+.q-row-undo:hover {
+  color: var(--ink);
+}

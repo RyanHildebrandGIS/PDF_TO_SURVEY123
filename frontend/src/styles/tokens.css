@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap");
+
+:root {
+  --ink: #1c1f1d;
+  --soft: #6b7370;
+  --line: #c8cdca;
+  --acc: #00693e;
+  --acc-d: #00522f;
+  --gold: #f2a900;
+  --gold-tint: rgba(242, 169, 0, 0.12);
+  --gold-ink: #6b4a00;
+  --surface: #ffffff;
+  --ground: #fafbfa;
+  --track: #e4e7e5;
+
+  --font: Archivo, system-ui, sans-serif;
+  --mono: ui-monospace, Menlo, monospace;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 10px;
+  --sp-4: 12px;
+  --sp-5: 16px;
+  --sp-6: 20px;
+  --sp-7: 24px;
+  --sp-8: 32px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+button,
+select,
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}

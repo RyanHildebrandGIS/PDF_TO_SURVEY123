@@ -1,122 +1,118 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useRef, useState } from "react";
+import { AppBar } from "./components/AppBar";
+import { Stepper } from "./components/Stepper";
+import { UploadStep } from "./steps/UploadStep";
+import { TemplateStep } from "./steps/TemplateStep";
+import { ProcessingStep } from "./steps/ProcessingStep";
+import { ReviewStep } from "./steps/ReviewStep";
+import { createJob, getJob, listTemplates, startJob } from "./api";
+import type { JobStatus, PendingFile, TemplateMeta } from "./types";
+import "./styles/tokens.css";
+import "./styles/primitives.css";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [step, setStep] = useState(1);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [templates, setTemplates] = useState<TemplateMeta[]>([]);
+  const [templateId, setTemplateId] = useState<string | null>(null);
+  const [job, setJob] = useState<JobStatus | null>(null);
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [reviewedFileIds, setReviewedFileIds] = useState<Set<string>>(new Set());
+  const pollRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    listTemplates().then(setTemplates);
+  }, []);
+
+  function mergePendingFiles(entries: PendingFile[]) {
+    setPendingFiles((prev) => {
+      const next = [...prev];
+      for (const entry of entries) {
+        const i = next.findIndex((f) => f.localId === entry.localId);
+        if (i >= 0) next[i] = entry;
+        else next.push(entry);
+      }
+      return next;
+    });
+  }
+
+  async function handleConvert() {
+    if (!templateId) return;
+    const files = pendingFiles.filter((f) => !f.error).map((f) => f.file);
+    const created = await createJob(files);
+    const started = await startJob(created.id, templateId);
+    setJob(started);
+    setStep(3);
+  }
+
+  useEffect(() => {
+    if (step !== 3 || !job) return;
+
+    pollRef.current = window.setInterval(async () => {
+      const updated = await getJob(job.id);
+      setJob(updated);
+      const allTerminal = updated.files.every((f) => f.status === "done" || f.status === "failed");
+      if (allTerminal) {
+        if (pollRef.current) window.clearInterval(pollRef.current);
+        window.setTimeout(() => {
+          setActiveReviewIndex(0);
+          setStep(4);
+        }, 400);
+      }
+    }, 700);
+
+    return () => {
+      if (pollRef.current) window.clearInterval(pollRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, job?.id]);
+
+  const selectedTemplate = templates.find((t) => t.id === templateId);
+  const reviewableFiles = job?.files.filter((f) => f.status === "done") ?? [];
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-shell">
+      <AppBar />
+      {step < 4 && <Stepper step={step} />}
 
-      <div className="ticks"></div>
+      {step === 1 && (
+        <UploadStep
+          files={pendingFiles}
+          onFilesAdded={mergePendingFiles}
+          onRemove={(id) => setPendingFiles((prev) => prev.filter((f) => f.localId !== id))}
+          onCancel={() => setPendingFiles([])}
+          onNext={() => setStep(2)}
+        />
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {step === 2 && (
+        <TemplateStep
+          templates={templates}
+          selectedId={templateId}
+          onSelect={setTemplateId}
+          onTemplateUploaded={(t) => setTemplates((prev) => [...prev, t])}
+          fileCount={pendingFiles.filter((f) => !f.error).length}
+          onBack={() => setStep(1)}
+          onConvert={handleConvert}
+        />
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {step === 3 && job && <ProcessingStep files={job.files} />}
+
+      {step === 4 && job && reviewableFiles.length > 0 && (
+        <ReviewStep
+          jobId={job.id}
+          templateName={selectedTemplate?.name ?? ""}
+          files={reviewableFiles}
+          activeIndex={Math.min(activeReviewIndex, reviewableFiles.length - 1)}
+          onActiveIndexChange={setActiveReviewIndex}
+          reviewedFileIds={reviewedFileIds}
+          onMarkReviewed={(fileId) => setReviewedFileIds((prev) => new Set(prev).add(fileId))}
+        />
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

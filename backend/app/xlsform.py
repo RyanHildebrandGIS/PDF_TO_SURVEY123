@@ -4,6 +4,8 @@ import openpyxl
 
 from .models import Question, TemplateMeta
 
+PLACEHOLDER_GROUP_NAME = "grp_form_content"
+
 
 class InvalidTemplateError(Exception):
     pass
@@ -56,6 +58,66 @@ def build_template_meta(template_id: str, name: str, path: str) -> TemplateMeta:
     )
 
 
+def _matching_end_row(ws, begin_row: int, type_col: int) -> int | None:
+    """Walk forward from a begin group/repeat row to find its matching end row, tracking nesting depth."""
+    depth = 1
+    for r in range(begin_row + 1, ws.max_row + 1):
+        t = str(ws.cell(row=r, column=type_col).value or "").strip().lower()
+        if t in ("begin group", "begin repeat"):
+            depth += 1
+        elif t in ("end group", "end repeat"):
+            depth -= 1
+            if depth == 0:
+                return r
+    return None
+
+
+def _find_placeholder_group(ws, col_idx: dict[str, int]) -> tuple[int, int] | None:
+    """Locate the template's `begin group grp_form_content ... end group` marker, if present."""
+    type_col = col_idx["type"]
+    name_col = col_idx["name"]
+    for r in range(2, ws.max_row + 1):
+        t = str(ws.cell(row=r, column=type_col).value or "").strip().lower()
+        n = str(ws.cell(row=r, column=name_col).value or "").strip().lower()
+        if t == "begin group" and n == PLACEHOLDER_GROUP_NAME:
+            end_row = _matching_end_row(ws, r, type_col)
+            if end_row:
+                return r, end_row
+    return None
+
+
+def _question_row_type(q: Question) -> str:
+    if q.type in ("select_one", "select_multiple") and q.choice_list_id:
+        return f"{q.type} {q.choice_list_id}"
+    return q.type
+
+
+def _build_survey_rows(questions: list[Question]) -> list[dict[str, str]]:
+    """Build survey-sheet rows for confirmed, non-skipped questions.
+
+    Groups questions by their source PDF page into their own `begin group` /
+    `end group` block when the PDF spans more than one page — a single-page
+    form's questions are inserted flat.
+    """
+    by_page: dict[int, list[Question]] = {}
+    for q in questions:
+        if q.confirmed and not q.skipped:
+            by_page.setdefault(q.page, []).append(q)
+
+    pages = sorted(by_page)
+    use_subgroups = len(pages) > 1
+
+    rows: list[dict[str, str]] = []
+    for page in pages:
+        if use_subgroups:
+            rows.append({"type": "begin group", "name": f"grp_page_{page}", "label": f"Page {page}"})
+        for q in by_page[page]:
+            rows.append({"type": _question_row_type(q), "name": q.name, "label": q.label})
+        if use_subgroups:
+            rows.append({"type": "end group"})
+    return rows
+
+
 def export_workbook(template_path: str, questions: list[Question]) -> bytes:
     wb = openpyxl.load_workbook(template_path)
     if "survey" not in wb.sheetnames:
@@ -66,17 +128,16 @@ def export_workbook(template_path: str, questions: list[Question]) -> bytes:
     if "type" not in col_idx or "name" not in col_idx or "label" not in col_idx:
         raise InvalidTemplateError("Template survey sheet must have type, name and label columns")
 
-    next_row = ws.max_row + 1
-    for q in questions:
-        if q.skipped or not q.confirmed:
-            continue
-        type_value = q.type
-        if q.type in ("select_one", "select_multiple") and q.choice_list_id:
-            type_value = f"{q.type} {q.choice_list_id}"
-        ws.cell(row=next_row, column=col_idx["type"], value=type_value)
-        ws.cell(row=next_row, column=col_idx["name"], value=q.name)
-        ws.cell(row=next_row, column=col_idx["label"], value=q.label)
-        next_row += 1
+    rows = _build_survey_rows(questions)
+    placeholder = _find_placeholder_group(ws, col_idx)
+
+    insert_at = placeholder[1] if placeholder else ws.max_row + 1
+    if rows:
+        ws.insert_rows(insert_at, amount=len(rows))
+        for offset, row in enumerate(rows):
+            for key, value in row.items():
+                if key in col_idx:
+                    ws.cell(row=insert_at + offset, column=col_idx[key], value=value)
 
     buffer = io.BytesIO()
     wb.save(buffer)

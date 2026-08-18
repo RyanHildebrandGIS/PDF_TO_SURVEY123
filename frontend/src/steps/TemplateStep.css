@@ -1,0 +1,40 @@
+.template-step {
+  padding: var(--sp-3) var(--sp-6) var(--sp-7);
+  max-width: 720px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.template-card {
+  padding: var(--sp-4);
+  cursor: pointer;
+}
+
+.template-card-selected {
+  border-color: var(--acc);
+  border-width: 2px;
+}
+
+.template-upload-cell {
+  padding: var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.template-upload-error {
+  margin-top: var(--sp-3);
+  color: var(--gold-ink);
+}
+
+.template-footer {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  justify-content: flex-end;
+}

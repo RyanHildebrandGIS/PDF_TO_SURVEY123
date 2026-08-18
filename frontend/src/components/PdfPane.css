@@ -1,0 +1,56 @@
+.pdf-pane {
+  padding: var(--sp-4);
+  border-right: 1.5px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.pdf-pane-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.pdf-pane-scroll {
+  flex: 1;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-3);
+}
+
+.pdf-pane-canvas-wrap {
+  position: relative;
+}
+
+.pdf-pane-canvas-wrap canvas {
+  display: block;
+}
+
+.pdf-pane-field {
+  position: absolute;
+  border: 1.5px solid var(--line);
+  background: rgba(0, 105, 62, 0.05);
+  cursor: pointer;
+}
+
+.pdf-pane-field:hover {
+  border-color: var(--gold);
+  background: var(--gold-tint);
+}
+
+.pdf-pane-field-selected {
+  border-color: var(--acc);
+  border-width: 2px;
+  background: var(--gold-tint);
+}
+
+.pdf-pane-nav {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: center;
+}
