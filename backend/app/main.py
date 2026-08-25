@@ -8,12 +8,14 @@ from fastapi.staticfiles import StaticFiles
 
 from .models import BaseQuestion, FileMeta, JobStatus, Question, QuestionPatch, StartJobRequest, TemplateMeta
 from .pdf_extraction import detect_kind, extract_questions
-from .seed import build_sample_template
 from .storage import ExportRecord, FileRecord, JobRecord, TemplateRecord, store
 from .xlsform import InvalidTemplateError, build_template_meta, export_workbook, list_base_questions
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "templates")
-SAMPLE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "..", "sample_templates", "standard_inspection_v4.xlsx")
+DEFAULT_TEMPLATE_ID = "caltrans_common_form_template"
+DEFAULT_TEMPLATE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "sample_templates", "caltrans_common_form_template.xlsx"
+)
 # The built frontend (`npm run build` in frontend/) — served directly so the whole
 # tool runs as a single process. FRONTEND_DIST lets a container image point this
 # somewhere other than the repo-relative default (see Dockerfile).
@@ -32,11 +34,11 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def seed_sample_template() -> None:
-    build_sample_template(SAMPLE_TEMPLATE_PATH)
-    template_id = "standard_inspection_v4"
-    meta = build_template_meta(template_id, "Standard Inspection v4", SAMPLE_TEMPLATE_PATH)
-    store.templates[template_id] = TemplateRecord(meta=meta, path=SAMPLE_TEMPLATE_PATH)
+def seed_default_template() -> None:
+    if not os.path.exists(DEFAULT_TEMPLATE_PATH):
+        return
+    meta = build_template_meta(DEFAULT_TEMPLATE_ID, "Caltrans Common Form Template", DEFAULT_TEMPLATE_PATH)
+    store.templates[DEFAULT_TEMPLATE_ID] = TemplateRecord(meta=meta, path=DEFAULT_TEMPLATE_PATH)
 
 
 @app.get("/health")

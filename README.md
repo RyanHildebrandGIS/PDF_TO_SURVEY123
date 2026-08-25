@@ -23,8 +23,9 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173. The backend seeds a sample "Standard
-Inspection v4" XLSForm template on first run.
+Then open http://localhost:5173. The backend seeds the real "Caltrans Common
+Form Template" (`backend/sample_templates/caltrans_common_form_template.xlsx`)
+as the default template on startup.
 
 ## Deploying as one process
 
