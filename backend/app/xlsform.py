@@ -127,7 +127,10 @@ def _build_survey_rows(questions: list[Question]) -> list[dict[str, str]]:
         if use_subgroups:
             rows.append({"type": "begin group", "name": f"grp_page_{page}", "label": f"Page {page}"})
         for q in by_page[page]:
-            rows.append({"type": _question_row_type(q), "name": q.name, "label": q.label})
+            row = {"type": _question_row_type(q), "name": q.name, "label": q.label}
+            if q.appearance:
+                row["appearance"] = q.appearance
+            rows.append(row)
         if use_subgroups:
             rows.append({"type": "end group"})
     return rows

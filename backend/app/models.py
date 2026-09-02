@@ -43,6 +43,7 @@ class Question(BaseModel):
     name: str
     type: XLSFormType
     choice_list_id: Optional[str] = None
+    appearance: Optional[str] = None
     confidence: float
     page: int
     bbox: list[float]

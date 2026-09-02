@@ -53,6 +53,7 @@ export interface Question {
   name: string;
   type: XLSFormType;
   choice_list_id: string | null;
+  appearance: string | null;
   confidence: number;
   page: number;
   bbox: [number, number, number, number];

@@ -261,31 +261,35 @@ XFA_INTERNAL_FIELD_NAMES = {"frmid", "contextpath", "flat", "flattenserver"}
 LONG_LABEL_CHARS = 160
 
 
-def _xfa_field_type(field_el, name: str) -> tuple[str, float, bool, str | None]:
-    """Returns (xlsform_type, confidence, skipped, choice_list_override)."""
+def _xfa_field_type(field_el, name: str) -> tuple[str, float, bool, str | None, str | None]:
+    """Returns (xlsform_type, confidence, skipped, choice_list_override, appearance)."""
     ui_kind = _xfa_ui_kind(field_el)
     if ui_kind == "checkButton":
         # A lone checkbox is a boolean toggle — map it to the near-universal "yes_no"
         # list rather than a one-off list that won't exist in the target template.
-        return "select_one", 0.8, False, "yes_no"
+        return "select_one", 0.8, False, "yes_no", None
     if ui_kind == "choiceList":
-        return "select_one", 0.75, False, None
+        return "select_one", 0.75, False, None, None
     if ui_kind == "dateTimeEdit":
-        return "date", 0.85, False, None
+        return "date", 0.85, False, None, None
     if ui_kind in ("numericEdit", "decimalEdit"):
-        return "decimal", 0.8, False, None
+        return "decimal", 0.8, False, None, None
     if ui_kind == "imageEdit":
-        return "image", 0.75, False, None
+        return "image", 0.75, False, None, None
     if ui_kind == "signature":
-        return "note", 0.3, True, None
+        # Survey123 captures signatures via an image question with the "signature"
+        # appearance (confirmed against this org's own template, which uses exactly
+        # this convention for its own signature field) — not a type XLSForm has no
+        # equivalent for, so there's no reason to skip these.
+        return "image", 0.7, False, None, "signature"
     if ui_kind == "passwordEdit":
-        return "text", 0.85, False, None
+        return "text", 0.85, False, None, None
     if ui_kind == "barcode":
-        return "text", 0.6, False, None
+        return "text", 0.6, False, None, None
     if ui_kind == "button" or ui_kind is None:
-        return "note", 0.0, True, None
+        return "note", 0.0, True, None, None
     qtype, confidence = _guess_type(name)
-    return qtype, confidence, False, None
+    return qtype, confidence, False, None, None
 
 
 def _xfa_field_label(el) -> str | None:
@@ -343,7 +347,7 @@ def extract_xfa_questions(pdf_bytes: bytes) -> list[Question]:
         nonlocal order
         tag = _local_tag(el)
 
-        if tag in ("pageSet", "draw"):
+        if tag == "draw":
             return
 
         if tag == "exclGroup":
@@ -370,7 +374,7 @@ def extract_xfa_questions(pdf_bytes: bytes) -> list[Question]:
             name = el.get("name") or f"field_{uuid.uuid4().hex[:6]}"
             if name.lower() in XFA_INTERNAL_FIELD_NAMES:
                 return  # LiveCycle bookkeeping field, not a real question
-            qtype, confidence, skipped, choice_override = _xfa_field_type(el, name)
+            qtype, confidence, skipped, choice_override, appearance = _xfa_field_type(el, name)
             if skipped and confidence == 0.0:
                 return  # plain UI buttons carry no data worth surfacing
             slug = unique_slug(name, path)
@@ -384,6 +388,10 @@ def extract_xfa_questions(pdf_bytes: bytes) -> list[Question]:
             else:
                 label = raw_label
             choice_list_id = choice_override or slug
+            # A read-only XFA field is typically an auto-generated stamp/calculation
+            # (e.g. an official date stamp), not something a person fills in — flag it
+            # rather than presenting it as an ordinary question to answer.
+            read_only = el.get("access") == "readOnly"
             order += 1
             questions.append(
                 Question(
@@ -393,11 +401,12 @@ def extract_xfa_questions(pdf_bytes: bytes) -> list[Question]:
                     name=slug,
                     type=qtype,
                     choice_list_id=choice_list_id if qtype in ("select_one", "select_multiple") else None,
+                    appearance=appearance,
                     confidence=confidence,
                     page=1,
                     bbox=[0.0, 0.0, 1.0, 1.0],
-                    skipped=skipped,
-                    skip_reason="signature — not supported" if skipped else None,
+                    skipped=read_only,
+                    skip_reason="read-only in source PDF — not user-entered" if read_only else None,
                 )
             )
             return
