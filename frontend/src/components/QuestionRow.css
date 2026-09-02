@@ -1,0 +1,84 @@
+.q-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--track);
+  cursor: pointer;
+}
+
+.q-row:hover {
+  background: var(--ground);
+}
+
+.q-row-selected {
+  background: var(--gold-tint);
+}
+
+.q-row-flag {
+  background: rgba(242, 169, 0, 0.09);
+  border-left: 3px solid var(--gold);
+}
+
+.q-row-duplicate {
+  background: var(--red-tint);
+  border-left: 3px solid var(--red);
+}
+
+.q-row-duplicate-note {
+  font: 400 11px/1.4 var(--font);
+  color: var(--red-ink);
+}
+
+.q-row-skipped {
+  opacity: 0.55;
+}
+
+.q-row-index {
+  width: 18px;
+  flex: none;
+}
+
+.q-row-drag-handle {
+  flex: none;
+  color: var(--soft);
+  cursor: grab;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 var(--sp-1);
+  touch-action: none;
+}
+
+.q-row-drag-handle:hover {
+  color: var(--ink);
+}
+
+.q-row-drag-handle:active {
+  cursor: grabbing;
+}
+
+.q-row-group {
+  width: 130px;
+  flex: none;
+}
+
+.q-row-edit {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.q-row-list {
+  width: 110px;
+}
+
+.q-row-skip,
+.q-row-undo {
+  color: var(--soft);
+  cursor: pointer;
+  flex: none;
+}
+
+.q-row-skip:hover,
+.q-row-undo:hover {
+  color: var(--ink);
+}

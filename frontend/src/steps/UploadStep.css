@@ -1,0 +1,66 @@
+.upload-step {
+  padding: var(--sp-2) var(--sp-6) var(--sp-7);
+  max-width: 720px;
+}
+
+.upload-drop {
+  padding: 40px var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+}
+
+.upload-drop-active {
+  border-color: var(--acc);
+  background: var(--gold-tint);
+}
+
+.upload-icon {
+  width: 46px;
+  height: 46px;
+  border: 1.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.upload-row-error {
+  border-color: var(--gold);
+}
+
+.upload-row-name {
+  flex: 1;
+}
+
+.upload-row-remove {
+  color: var(--soft);
+  cursor: pointer;
+  padding: 0 var(--sp-1);
+}
+
+.upload-row-remove:hover {
+  color: var(--ink);
+}
+
+.upload-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+}

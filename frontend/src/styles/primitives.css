@@ -1,0 +1,117 @@
+.h1 {
+  font: 600 20px/1.25 var(--font);
+  letter-spacing: -0.01em;
+}
+
+.label {
+  font: 600 11px/1.3 var(--font);
+  color: var(--soft);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.text {
+  font: 500 14px/1.45 var(--font);
+}
+
+.text-soft {
+  font: 400 12.5px/1.4 var(--font);
+  color: var(--soft);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 5px var(--sp-3);
+  font: 600 12px/1 var(--font);
+  border: 1px solid var(--line);
+  color: var(--soft);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.pill-active {
+  border-color: var(--acc);
+  color: var(--surface);
+  background: var(--acc);
+}
+
+.pill-ink {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.pill-flag {
+  border-color: var(--gold);
+  border-left: 3px solid var(--gold);
+  color: var(--gold-ink);
+  background: var(--gold-tint);
+}
+
+.pill-danger {
+  border-color: var(--red);
+  border-left: 3px solid var(--red);
+  color: var(--red-ink);
+  background: var(--red-tint);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  font: 600 13px/1 var(--font);
+  border: 1px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--ground);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: var(--surface);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--acc-d);
+  border-color: var(--acc-d);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.box {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dash {
+  border: 2px dashed var(--line);
+  background: var(--surface);
+}
+
+.select {
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  font: 500 13px/1 var(--font);
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.select-flag {
+  border-color: var(--acc);
+}

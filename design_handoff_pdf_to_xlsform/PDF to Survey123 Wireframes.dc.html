@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-cbafd325-b443-42f5-a4b8-bfe2740b3fab/styles.css">
+<script src="_ds/modernist-cbafd325-b443-42f5-a4b8-bfe2740b3fab/_ds_bundle.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#eceeed;font-family:Archivo,system-ui,sans-serif}
+.dv-turn{padding:40px 44px 32px;border-bottom:2px solid rgba(0,0,0,.12);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#12241b;color:#fff;text-decoration:none}
+.dv-tname{font:600 13px/1.2 Archivo,system-ui,sans-serif;color:#12241b}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#12241b;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 Archivo,system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:2px solid #12241b;overflow:hidden}
+.dv-opt:target .dv-oid{background:#00693e;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 Archivo,system-ui,sans-serif;color:rgba(0,0,0,.5)}
+a{color:#00522f}a:hover{color:#00693e}
+/* interface primitives — Caltrans palette (green #00693E, gold #F2A900) */
+.wf{--ink:#1c1f1d;--soft:#6b7370;--line:#c8cdca;--acc:#00693e;--acc-d:#00522f;--gold:#f2a900;font-family:Archivo,system-ui,sans-serif;color:var(--ink)}
+.wf-scr{padding:0;background:#fafbfa}
+.wf-cap{font:600 10px/1 Archivo;color:var(--soft);text-transform:uppercase;letter-spacing:.12em;padding:11px 16px 0}
+.wf-bar{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:2px solid var(--ink);background:#fff}
+.wf-brand{display:flex;align-items:center;gap:9px}
+.wf-mark{display:flex;align-items:center;justify-content:center;height:22px;padding:0 9px;background:var(--acc);color:#fff;font:700 12px/1 Archivo;letter-spacing:.03em}
+.wf-box{border:1px solid var(--line);background:#fff}
+.wf-dash{border:2px dashed var(--line);background:#fff}
+.wf-lbl{font:600 10px/1.3 Archivo;color:var(--soft);text-transform:uppercase;letter-spacing:.1em}
+.wf-h{font:600 17px/1.2 Archivo;letter-spacing:-.01em}
+.wf-t{font:500 12.5px/1.45 Archivo}
+.wf-s{font:400 11px/1.4 Archivo;color:var(--soft)}
+.wf-line{height:7px;background:#e4e7e5}
+.wf-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;font:600 10.5px/1 Archivo;border:1px solid var(--line);color:var(--soft);background:#fff}
+.wf-btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 15px;font:600 11.5px/1 Archivo;border:1px solid var(--ink);background:#fff;color:var(--ink)}
+.wf-btn-p{background:var(--acc);border-color:var(--acc);color:#fff}
+.wf-flag{border-color:var(--gold);border-left:3px solid var(--gold);color:#6b4a00;background:rgba(242,169,0,.12)}
+.wf-page{background:#fff;border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:7px}
+.wf-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #e4e7e5}
+.wf-sel{border:1px solid var(--line);padding:5px 9px;font:500 11px/1 Archivo;color:var(--ink);display:inline-flex;gap:6px;align-items:center;background:#fff}
+</style></helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">PDF → XLSForm for Survey123 — three structural approaches</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Guided stepper — one decision per step, review last</div>
+<div class="dv-card wf" style="width:720px">
+
+<div class="wf-scr">
+<div class="wf-bar"><span class="wf-brand"><span class="wf-mark">Caltrans</span><span class="wf-t" style="font-weight:600">Form Converter</span></span><span class="wf-s">New conversion</span><span style="flex:1"></span><span class="wf-pill">Templates</span><span class="wf-pill">History</span></div>
+<div style="display:flex;align-items:center;gap:8px;padding:14px 16px 6px">
+<span class="wf-pill" style="border-color:var(--acc);color:#fff;background:var(--acc)">1 Upload</span>
+<span style="flex:none;width:22px;height:1.5px;background:var(--line)"></span>
+<span class="wf-pill">2 Template</span>
+<span style="flex:none;width:22px;height:1.5px;background:var(--line)"></span>
+<span class="wf-pill">3 Review</span>
+<span style="flex:none;width:22px;height:1.5px;background:var(--line)"></span>
+<span class="wf-pill">4 Export</span>
+</div>
+<div style="padding:8px 16px 18px">
+<div class="wf-h" style="margin-bottom:10px">Drop the PDFs you want to convert</div>
+<div class="wf-dash" style="padding:30px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff">
+<div style="width:46px;height:46px;;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center" class="wf-s">pdf</div>
+<div class="wf-t">Drop files here, or browse</div>
+<div class="wf-s">Fillable forms and text documents · one or many</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+<div class="wf-box" style="display:flex;align-items:center;gap:10px;padding:9px 12px"><span class="wf-pill">pdf</span><span class="wf-t" style="flex:1">well-inspection-form.pdf</span><span class="wf-s">3 pages · fillable</span><span class="wf-s">✕</span></div>
+<div class="wf-box" style="display:flex;align-items:center;gap:10px;padding:9px 12px"><span class="wf-pill">pdf</span><span class="wf-t" style="flex:1">site-visit-checklist.pdf</span><span class="wf-s">2 pages · text</span><span class="wf-s">✕</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+<span class="wf-s" style="flex:1">Each PDF exports as its own .xlsx</span>
+<span class="wf-btn">Cancel</span><span class="wf-btn wf-btn-p">Choose template →</span>
+</div>
+</div>
+</div>
+
+<div class="wf-scr" style="border-top:1.5px dashed var(--line)">
+<div class="wf-cap">step 2 — template pick</div>
+<div style="padding:10px 16px 18px">
+<div class="wf-h" style="margin-bottom:4px">Which template should these follow?</div>
+<div class="wf-s" style="margin-bottom:12px">Column set, choice lists and settings sheet come from the template. Detected questions fill it in.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="wf-box" style="padding:12px;border-color:var(--acc);border-width:2px"><div class="wf-lbl" style="color:#6b4a00">selected</div><div class="wf-t" style="font-weight:600;margin:4px 0">Standard Inspection v4</div><div class="wf-s">28 columns · 6 choice lists · geopoint required</div></div>
+<div class="wf-box" style="padding:12px"><div class="wf-lbl">saved</div><div class="wf-t" style="font-weight:600;margin:4px 0">Client Intake (short)</div><div class="wf-s">19 columns · 2 choice lists</div></div>
+<div class="wf-box" style="padding:12px"><div class="wf-lbl">saved</div><div class="wf-t" style="font-weight:600;margin:4px 0">Habitat Survey 2026</div><div class="wf-s">34 columns · repeats</div></div>
+<div class="wf-dash" style="padding:12px;display:flex;align-items:center;justify-content:center;background:#fff"><span class="wf-t">+ Upload a template</span></div>
+</div>
+<div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end"><span class="wf-btn">Back</span><span class="wf-btn wf-btn-p">Convert 2 files →</span></div>
+</div>
+</div>
+
+<div class="wf-scr" style="border-top:1.5px dashed var(--line)">
+<div class="wf-cap">step 3 — processing</div>
+<div style="padding:10px 16px 20px;display:flex;flex-direction:column;gap:12px">
+<div class="wf-h">Reading forms…</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div class="wf-box" style="padding:11px 12px;display:flex;flex-direction:column;gap:7px">
+<div style="display:flex;align-items:center;gap:8px"><span class="wf-t" style="flex:1;font-weight:600">well-inspection-form.pdf</span><span class="wf-s">page 2 of 3 · 24 questions found</span></div>
+<div class="wf-line"><div style="width:62%;height:7px;;background:var(--acc)"></div></div>
+<div class="wf-s">Extracting fields → matching template columns</div>
+</div>
+<div class="wf-box" style="padding:11px 12px;display:flex;flex-direction:column;gap:7px;opacity:.65">
+<div style="display:flex;align-items:center;gap:8px"><span class="wf-t" style="flex:1;font-weight:600">site-visit-checklist.pdf</span><span class="wf-s">queued</span></div>
+<div class="wf-line"></div>
+</div>
+</div>
+<div class="wf-s">You can leave this page — we'll keep going.</div>
+</div>
+</div>
+
+<div class="wf-scr" style="border-top:1.5px dashed var(--line)">
+<div class="wf-cap">step 4 — review, side by side</div>
+<div class="wf-bar" style="border-bottom-style:solid;border-bottom-width:1px">
+<span class="wf-t" style="font-weight:600">well-inspection-form.pdf</span><span class="wf-pill">Standard Inspection v4</span><span style="flex:1"></span>
+<span class="wf-pill wf-flag">5 low confidence</span><span class="wf-btn wf-btn-p">Export .xlsx</span>
+</div>
+<div style="display:grid;grid-template-columns:44% 56%;min-height:330px">
+<div style="padding:12px;border-right:1.5px dashed var(--line);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:6px"><span class="wf-s" style="flex:1">Page 2 / 3</span><span class="wf-pill">−</span><span class="wf-pill">+</span></div>
+<div class="wf-page" style="flex:1">
+<div class="wf-line" style="width:55%;height:11px"></div>
+<div class="wf-line" style="width:80%"></div>
+<div style="height:1px;background:#efe9de;margin:2px 0"></div>
+<div class="wf-box" style="padding:8px;background:rgba(242,169,0,.16);border-color:var(--acc)"><div class="wf-line" style="width:70%;background:#e0cdbb"></div></div>
+<div class="wf-line" style="width:64%"></div>
+<div class="wf-box" style="padding:8px"><div class="wf-line" style="width:40%"></div></div>
+<div class="wf-line" style="width:88%"></div>
+<div class="wf-line" style="width:52%"></div>
+<div style="display:flex;gap:6px"><span class="wf-pill">☐ yes</span><span class="wf-pill">☐ no</span><span class="wf-pill">☐ n/a</span></div>
+<div class="wf-line" style="width:74%"></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;gap:6px;padding:10px 12px"><span class="wf-pill" style="border-color:var(--ink);color:var(--ink)">All 24</span><span class="wf-pill wf-flag">Low confidence 5</span><span class="wf-pill">Skipped 2</span></div>
+<div style="border-top:1px dashed var(--line)">
+<div class="wf-row" style="background:rgba(242,169,0,.09)"><span class="wf-s" style="width:14px">7</span><div style="flex:1"><div class="wf-t" style="font-weight:600">Casing condition</div><div class="wf-s">name: casing_condition</div></div><span class="wf-sel" style="border-color:var(--acc)">select_one ▾</span><span class="wf-pill wf-flag">check</span></div>
+<div class="wf-row"><span class="wf-s" style="width:14px">8</span><div style="flex:1"><div class="wf-t" style="font-weight:600">Depth to water (ft)</div><div class="wf-s">name: depth_to_water</div></div><span class="wf-sel">decimal ▾</span><span class="wf-s">✓</span></div>
+<div class="wf-row"><span class="wf-s" style="width:14px">9</span><div style="flex:1"><div class="wf-t" style="font-weight:600">Inspector notes</div><div class="wf-s">name: inspector_notes</div></div><span class="wf-sel">text ▾</span><span class="wf-s">✓</span></div>
+<div class="wf-row" style="background:rgba(242,169,0,.09)"><span class="wf-s" style="width:14px">10</span><div style="flex:1"><div class="wf-t" style="font-weight:600">Location of wellhead</div><div class="wf-s">name: wellhead_loc</div></div><span class="wf-sel" style="border-color:var(--acc)">geopoint ▾</span><span class="wf-pill wf-flag">check</span></div>
+<div class="wf-row"><span class="wf-s" style="width:14px">11</span><div style="flex:1"><div class="wf-t" style="font-weight:600">Photo of site</div><div class="wf-s">name: site_photo</div></div><span class="wf-sel">image ▾</span><span class="wf-s">✓</span></div>
+<div class="wf-row" style="border-bottom:none;opacity:.55"><span class="wf-s" style="width:14px">12</span><div style="flex:1"><div class="wf-t" style="font-weight:600">Signature</div><div class="wf-s">skipped — not in template</div></div><span class="wf-sel">— ▾</span><span class="wf-s">↺</span></div>
+</div>
+<div style="padding:11px 12px;border-top:1.5px dashed var(--line);display:flex;align-items:center;gap:10px"><span class="wf-s" style="flex:1">2 of 2 files reviewed</span><span class="wf-btn">Next file →</span></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Batch workbench — one persistent screen, queue always visible</div>
+<div class="dv-card wf" style="width:820px">
+
+<div class="wf-scr">
+<div class="wf-bar"><span class="wf-brand"><span class="wf-mark">Caltrans</span><span class="wf-t" style="font-weight:600">Form Converter</span></span><span class="wf-pill">Batch · 4 files</span><span style="flex:1"></span><span class="wf-sel">Template: Standard Inspection v4 ▾</span><span class="wf-btn wf-btn-p">Export all (4 .xlsx)</span></div>
+<div style="display:grid;grid-template-columns:190px 1fr 300px;min-height:420px">
+
+<div style="border-right:1.5px dashed var(--line);display:flex;flex-direction:column">
+<div style="padding:11px 12px 6px"><div class="wf-lbl">Queue</div></div>
+<div style="display:flex;flex-direction:column">
+<div style="padding:9px 12px;border-left:3px solid var(--acc);background:rgba(0,105,62,.07)"><div class="wf-t" style="font-weight:600">well-inspection…</div><div class="wf-s">24 q · 5 to check</div></div>
+<div style="padding:9px 12px;border-left:3px solid transparent"><div class="wf-t">site-visit-check…</div><div class="wf-s">18 q · clean ✓</div></div>
+<div style="padding:9px 12px;border-left:3px solid transparent"><div class="wf-t">tank-log-2026.pdf</div><div class="wf-line" style="width:60%;margin-top:5px"><div style="width:45%;height:7px;;background:var(--acc)"></div></div></div>
+<div style="padding:9px 12px;border-left:3px solid transparent;opacity:.6"><div class="wf-t">intake-b.pdf</div><div class="wf-s">queued</div></div>
+</div>
+<div class="wf-dash" style="margin:12px;padding:16px 10px;text-align:center;background:#fff"><div class="wf-s">+ drop more PDFs</div></div>
+<div style="flex:1"></div>
+<div style="padding:11px 12px;border-top:1.5px dashed var(--line)"><div class="wf-s">2 of 4 reviewed</div><div class="wf-line" style="margin-top:6px"><div style="width:50%;height:7px;;background:var(--acc)"></div></div></div>
+</div>
+
+<div style="padding:12px;border-right:1.5px dashed var(--line);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:6px"><span class="wf-t" style="flex:1;font-weight:600">well-inspection-form.pdf</span><span class="wf-pill">◀ 2/3 ▶</span><span class="wf-pill">fit</span></div>
+<div class="wf-page" style="flex:1">
+<div class="wf-line" style="width:48%;height:11px"></div>
+<div class="wf-line" style="width:85%"></div>
+<div class="wf-line" style="width:70%"></div>
+<div style="height:1px;background:#efe9de;margin:3px 0"></div>
+<div class="wf-box" style="padding:8px;border-color:var(--acc);background:rgba(242,169,0,.16);position:relative">
+<div class="wf-line" style="width:66%;background:#e0cdbb"></div>
+<span class="wf-pill wf-flag" style="position:absolute;right:-6px;top:-11px">q7</span>
+</div>
+<div class="wf-line" style="width:58%"></div>
+<div style="display:flex;gap:6px"><span class="wf-pill">☐ good</span><span class="wf-pill">☐ fair</span><span class="wf-pill">☐ poor</span></div>
+<div class="wf-line" style="width:80%"></div>
+<div class="wf-box" style="padding:8px"><div class="wf-line" style="width:35%"></div></div>
+<div class="wf-line" style="width:62%"></div>
+<div class="wf-line" style="width:44%"></div>
+</div>
+<div class="wf-s">Click any field on the page to jump to its row →</div>
+</div>
+
+<div style="display:flex;flex-direction:column">
+<div style="padding:11px 12px 8px;display:flex;gap:6px;align-items:center"><span class="wf-lbl" style="flex:1">Questions</span><span class="wf-pill wf-flag">5 low conf.</span></div>
+<div style="border-top:1px dashed var(--line);flex:1">
+<div class="wf-row" style="flex-direction:column;align-items:stretch;gap:6px;background:rgba(242,169,0,.09)">
+<div style="display:flex;gap:8px;align-items:baseline"><span class="wf-s">q7</span><span class="wf-t" style="font-weight:600;flex:1">Casing condition</span></div>
+<div style="display:flex;gap:6px"><span class="wf-sel" style="border-color:var(--acc);flex:1">select_one ▾</span><span class="wf-sel">list: cond ▾</span></div>
+<div class="wf-s">Guess from 3 checkboxes — confirm choices</div>
+</div>
+<div class="wf-row" style="flex-direction:column;align-items:stretch;gap:6px"><div style="display:flex;gap:8px"><span class="wf-s">q8</span><span class="wf-t" style="font-weight:600;flex:1">Depth to water</span><span class="wf-s">✓</span></div><div style="display:flex;gap:6px"><span class="wf-sel" style="flex:1">decimal ▾</span><span class="wf-sel">ft</span></div></div>
+<div class="wf-row" style="flex-direction:column;align-items:stretch;gap:6px"><div style="display:flex;gap:8px"><span class="wf-s">q9</span><span class="wf-t" style="font-weight:600;flex:1">Inspector notes</span><span class="wf-s">✓</span></div><div style="display:flex;gap:6px"><span class="wf-sel" style="flex:1">text ▾</span></div></div>
+<div class="wf-row" style="flex-direction:column;align-items:stretch;gap:6px;background:rgba(242,169,0,.09)"><div style="display:flex;gap:8px"><span class="wf-s">q10</span><span class="wf-t" style="font-weight:600;flex:1">Wellhead location</span></div><div style="display:flex;gap:6px"><span class="wf-sel" style="border-color:var(--acc);flex:1">geopoint ▾</span></div><div class="wf-s">Template requires a geopoint — is this it?</div></div>
+<div class="wf-row" style="border-bottom:none"><span class="wf-s">q11</span><span class="wf-t" style="font-weight:600;flex:1">Site photo</span><span class="wf-sel">image ▾</span></div>
+</div>
+<div style="padding:10px 12px;border-top:1.5px dashed var(--line);display:flex;gap:8px"><span class="wf-btn" style="flex:1">Mark file reviewed</span><span class="wf-btn wf-btn-p">Export this</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf-scr" style="border-top:1.5px dashed var(--line)">
+<div class="wf-cap">empty state — same shell, queue not yet filled</div>
+<div style="display:grid;grid-template-columns:190px 1fr;min-height:190px">
+<div style="border-right:1.5px dashed var(--line);padding:12px"><div class="wf-lbl">Queue</div><div class="wf-s" style="margin-top:8px">Nothing yet</div><div class="wf-dash" style="margin-top:12px;padding:18px 10px;text-align:center;background:#fff"><div class="wf-s">+ drop PDFs</div></div></div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:22px">
+<div class="wf-h">Drop a stack of PDFs to begin</div>
+<div class="wf-s">Pick a template once — it applies to the whole batch</div>
+<div style="display:flex;gap:8px"><span class="wf-sel">Template: Standard Inspection v4 ▾</span><span class="wf-btn wf-btn-p">Browse files</span></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Page-first — questions pinned onto the PDF, template checklist as the goal</div>
+<div class="dv-card wf" style="width:760px">
+
+<div class="wf-scr">
+<div class="wf-bar"><span class="wf-brand"><span class="wf-mark">Caltrans</span><span class="wf-t" style="font-weight:600">Form Converter</span></span><span style="flex:1"></span><span class="wf-pill">Recent</span><span class="wf-pill">Templates</span></div>
+<div style="padding:26px 20px 30px;display:flex;flex-direction:column;align-items:flex-start;gap:12px">
+<div class="wf-h" style="font-size:26px">Turn a paper form into a Survey123 sheet</div>
+<div class="wf-s" style="max-width:420px">Start with the template you're filling. Then drop the PDFs — we'll pin what we find onto the page for you to confirm.</div>
+<div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+<span class="wf-sel" style="padding:9px 14px">Standard Inspection v4 ▾</span>
+<span class="wf-btn wf-btn-p" style="padding:10px 20px">Drop PDFs</span>
+</div>
+<div style="display:flex;gap:10px;margin-top:14px;width:100%">
+<div class="wf-box" style="flex:1;padding:11px 12px"><div class="wf-lbl">last run</div><div class="wf-t" style="font-weight:600;margin-top:4px">tank-log-2026.pdf</div><div class="wf-s">exported 2 days ago · 31 questions</div></div>
+<div class="wf-box" style="flex:1;padding:11px 12px"><div class="wf-lbl">last run</div><div class="wf-t" style="font-weight:600;margin-top:4px">intake-a.pdf</div><div class="wf-s">exported 2 days ago · 19 questions</div></div>
+</div>
+</div>
+</div>
+
+<div class="wf-scr" style="border-top:1.5px dashed var(--line)">
+<div class="wf-cap">processing — happens over the page itself</div>
+<div style="display:grid;grid-template-columns:1fr 230px;min-height:250px">
+<div style="padding:14px;border-right:1.5px dashed var(--line);position:relative">
+<div class="wf-page" style="height:100%;opacity:.55">
+<div class="wf-line" style="width:50%;height:11px"></div>
+<div class="wf-line" style="width:82%"></div>
+<div class="wf-line" style="width:68%"></div>
+<div class="wf-line" style="width:76%"></div>
+<div class="wf-line" style="width:58%"></div>
+<div class="wf-line" style="width:84%"></div>
+<div class="wf-line" style="width:47%"></div>
+</div>
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:7px">
+<div class="wf-box" style="padding:10px 16px;display:flex;flex-direction:column;gap:7px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.07)">
+<div class="wf-t" style="font-weight:600">Finding questions… 14 so far</div>
+<div class="wf-line" style="width:170px"><div style="width:55%;height:7px;;background:var(--acc)"></div></div>
+<div class="wf-s">page 2 of 3</div>
+</div>
+</div>
+</div>
+<div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+<div class="wf-lbl">Template checklist</div>
+<div class="wf-s">Standard Inspection v4 · 28 columns</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+<div style="display:flex;gap:7px;align-items:center"><span class="wf-s">✓</span><span class="wf-t">survey sheet</span></div>
+<div style="display:flex;gap:7px;align-items:center"><span class="wf-s">✓</span><span class="wf-t">choices sheet</span></div>
+<div style="display:flex;gap:7px;align-items:center;opacity:.5"><span class="wf-s">…</span><span class="wf-t">geopoint question</span></div>
+<div style="display:flex;gap:7px;align-items:center;opacity:.5"><span class="wf-s">…</span><span class="wf-t">settings sheet</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="wf-scr" style="border-top:1.5px dashed var(--line)">
+<div class="wf-cap">review — confirm pins on the page, checklist fills up</div>
+<div class="wf-bar" style="border-bottom-style:solid;border-bottom-width:1px"><span class="wf-t" style="font-weight:600">well-inspection-form.pdf</span><span class="wf-pill">◀ page 2/3 ▶</span><span style="flex:1"></span><span class="wf-pill wf-flag">5 to confirm</span><span class="wf-btn wf-btn-p">Export .xlsx</span></div>
+<div style="display:grid;grid-template-columns:1fr 230px;min-height:400px">
+
+<div style="padding:14px;border-right:1.5px dashed var(--line)">
+<div class="wf-page" style="height:100%;gap:9px;position:relative">
+<div class="wf-line" style="width:50%;height:11px"></div>
+<div class="wf-box" style="padding:7px 9px;display:flex;align-items:center;gap:8px"><div class="wf-line" style="width:38%"></div><span style="flex:1"></span><span class="wf-pill">text ✓</span></div>
+<div class="wf-box" style="padding:7px 9px;display:flex;align-items:center;gap:8px"><div class="wf-line" style="width:52%"></div><span style="flex:1"></span><span class="wf-pill">decimal ✓</span></div>
+
+<div class="wf-box" style="padding:9px;border-color:var(--acc);border-width:2px;background:rgba(242,169,0,.14);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><div class="wf-line" style="width:44%;background:#e0cdbb"></div><span style="flex:1"></span><span class="wf-pill wf-flag">low confidence</span></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+<span class="wf-s">3 checkboxes → </span><span class="wf-sel" style="border-color:var(--acc)">select_one ▾</span><span class="wf-s">or</span><span class="wf-sel">select_multiple</span>
+</div>
+<div style="display:flex;gap:6px"><span class="wf-btn wf-btn-p" style="padding:6px 12px">Confirm</span><span class="wf-btn" style="padding:6px 12px">Skip field</span></div>
+</div>
+
+<div class="wf-box" style="padding:7px 9px;display:flex;align-items:center;gap:8px"><div class="wf-line" style="width:60%"></div><span style="flex:1"></span><span class="wf-pill">text ✓</span></div>
+<div class="wf-box" style="padding:7px 9px;display:flex;align-items:center;gap:8px;border-color:var(--acc);background:rgba(242,169,0,.08)"><div class="wf-line" style="width:34%"></div><span style="flex:1"></span><span class="wf-pill wf-flag">geopoint?</span></div>
+<div class="wf-box" style="padding:7px 9px;display:flex;align-items:center;gap:8px"><div class="wf-line" style="width:46%"></div><span style="flex:1"></span><span class="wf-pill">image ✓</span></div>
+<div class="wf-line" style="width:70%"></div>
+<div class="wf-line" style="width:40%"></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column">
+<div style="padding:12px;display:flex;flex-direction:column;gap:9px;border-bottom:1.5px dashed var(--line)">
+<div class="wf-lbl">Template checklist</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:7px"><span class="wf-s">✓</span><span class="wf-t" style="flex:1">survey sheet</span><span class="wf-s">24</span></div>
+<div style="display:flex;gap:7px"><span class="wf-s">✓</span><span class="wf-t" style="flex:1">choices sheet</span><span class="wf-s">6 lists</span></div>
+<div style="display:flex;gap:7px"><span class="wf-s">✓</span><span class="wf-t" style="flex:1">settings sheet</span><span class="wf-s">auto</span></div>
+<div style="display:flex;gap:7px;color:#6b4a00"><span class="wf-s" style="color:#6b4a00">!</span><span class="wf-t" style="flex:1;color:#6b4a00">geopoint question</span><span class="wf-s" style="color:#6b4a00">pick</span></div>
+</div>
+</div>
+<div style="padding:12px;display:flex;flex-direction:column;gap:8px;flex:1">
+<div class="wf-lbl">To confirm (5)</div>
+<div class="wf-box" style="padding:8px 10px;border-color:var(--acc)"><div class="wf-t" style="font-weight:600">Casing condition</div><div class="wf-s">page 2 · select_one?</div></div>
+<div class="wf-box" style="padding:8px 10px"><div class="wf-t" style="font-weight:600">Wellhead location</div><div class="wf-s">page 2 · geopoint?</div></div>
+<div class="wf-box" style="padding:8px 10px"><div class="wf-t" style="font-weight:600">Repair needed</div><div class="wf-s">page 3 · select_one?</div></div>
+<div class="wf-s">Jump through them with ↹ / Enter</div>
+</div>
+<div style="padding:11px 12px;border-top:1.5px dashed var(--line);display:flex;gap:8px"><span class="wf-btn" style="flex:1">Next file (3 left)</span></div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "take <a class="dv-oid" href="#1b">1b</a> further with the batch export screen" · "combine <a class="dv-oid" href="#1c">1c</a>'s checklist into <a class="dv-oid" href="#1a">1a</a>" · "show what a template-mismatch error looks like"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}"></script>
+</body>
+</html>

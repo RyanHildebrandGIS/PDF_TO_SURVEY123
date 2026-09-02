@@ -1,0 +1,13 @@
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-6) var(--sp-2);
+}
+
+.stepper-rule {
+  flex: none;
+  width: 28px;
+  height: 1.5px;
+  background: var(--line);
+}
