@@ -1,0 +1,20 @@
+.base-item-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.base-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2) 0;
+}
+
+.base-group-header {
+  padding-top: var(--sp-1);
+}
+
+.base-group .base-item-list {
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--track);
+}

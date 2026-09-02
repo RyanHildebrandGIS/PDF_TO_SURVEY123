@@ -1,3 +1,4 @@
+import html
 import io
 import re
 
@@ -9,7 +10,7 @@ _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 
 def _strip_html(text: str) -> str:
-    return _HTML_TAG_RE.sub("", text).strip()
+    return html.unescape(_HTML_TAG_RE.sub("", text)).strip()
 
 PLACEHOLDER_GROUP_NAME = "grp_form_content"
 
@@ -136,10 +137,11 @@ def _build_survey_rows(questions: list[Question]) -> list[dict[str, str]]:
     return rows
 
 
-def list_base_questions(template_path: str) -> list[dict[str, str]]:
-    """The template's own fixed survey rows — everything outside the grp_form_content
-    placeholder — so the reviewer can see what's already in the template as distinct
-    from what this PDF is about to add."""
+def list_base_structure(template_path: str) -> list[dict]:
+    """The template's own fixed survey content — everything outside the
+    grp_form_content placeholder — as a nested tree of groups and questions in
+    document order, so the reviewer can see the template's real structure (with
+    its group headers) rather than a flat list."""
     wb = openpyxl.load_workbook(template_path, data_only=True)
     if "survey" not in wb.sheetnames:
         return []
@@ -153,19 +155,35 @@ def list_base_questions(template_path: str) -> list[dict[str, str]]:
     placeholder = _find_placeholder_group(ws, col_idx)
     skip_rows = set(range(placeholder[0], placeholder[1] + 1)) if placeholder else set()
 
-    rows: list[dict[str, str]] = []
+    items: list[dict] = []
+    stack: list[dict] = []
+
+    def container() -> list[dict]:
+        return stack[-1]["questions"] if stack else items
+
     for r in range(2, ws.max_row + 1):
         if r in skip_rows:
             continue
         raw_type = ws.cell(row=r, column=col_idx["type"]).value
         t = str(raw_type or "").strip()
-        if not t or t.lower() in ("begin group", "end group", "begin repeat", "end repeat"):
+        if not t:
             continue
         n = str(ws.cell(row=r, column=col_idx["name"]).value or "").strip()
         label_val = ws.cell(row=r, column=label_col).value if label_col else None
         label = _strip_html(str(label_val)) if label_val else n
-        rows.append({"type": t, "name": n, "label": label or n})
-    return rows
+
+        tl = t.lower()
+        if tl in ("begin group", "begin repeat"):
+            group = {"kind": "group", "name": n, "label": label or n, "questions": []}
+            container().append(group)
+            stack.append(group)
+        elif tl in ("end group", "end repeat"):
+            if stack:
+                stack.pop()
+        else:
+            container().append({"kind": "question", "type": t, "name": n, "label": label or n})
+
+    return items
 
 
 def get_choice_lists(path: str) -> dict[str, list[dict[str, str]]]:

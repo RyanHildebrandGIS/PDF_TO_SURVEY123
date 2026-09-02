@@ -20,6 +20,16 @@
   border-left: 3px solid var(--gold);
 }
 
+.q-row-duplicate {
+  background: var(--red-tint);
+  border-left: 3px solid var(--red);
+}
+
+.q-row-duplicate-note {
+  font: 400 11px/1.4 var(--font);
+  color: var(--red-ink);
+}
+
 .q-row-skipped {
   opacity: 0.55;
 }

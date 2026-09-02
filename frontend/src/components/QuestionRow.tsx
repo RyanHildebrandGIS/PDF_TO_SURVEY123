@@ -19,12 +19,13 @@ const LOW_CONFIDENCE = 0.6;
 interface Props {
   question: Question;
   choiceLists: ChoiceLists;
+  duplicateOf: string | null;
   selected: boolean;
   onSelect: () => void;
   onPatch: (patch: QuestionPatch) => void;
 }
 
-export function QuestionRow({ question: q, choiceLists, selected, onSelect, onPatch }: Props) {
+export function QuestionRow({ question: q, choiceLists, duplicateOf, selected, onSelect, onPatch }: Props) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(q.label);
   const [name, setName] = useState(q.name);
@@ -58,9 +59,11 @@ export function QuestionRow({ question: q, choiceLists, selected, onSelect, onPa
     );
   }
 
+  const flagDuplicate = duplicateOf && !q.confirmed;
+
   return (
     <div
-      className={`q-row ${lowConfidence && !q.confirmed ? "q-row-flag" : ""} ${selected ? "q-row-selected" : ""}`}
+      className={`q-row ${lowConfidence && !q.confirmed ? "q-row-flag" : ""} ${flagDuplicate ? "q-row-duplicate" : ""} ${selected ? "q-row-selected" : ""}`}
       onClick={onSelect}
     >
       <span className="text-soft q-row-index">{q.order}</span>
@@ -77,6 +80,9 @@ export function QuestionRow({ question: q, choiceLists, selected, onSelect, onPa
               {q.label}
             </div>
             <div className="text-soft">name: {q.name}</div>
+            {flagDuplicate && (
+              <div className="q-row-duplicate-note">may duplicate "{duplicateOf}" already in the template</div>
+            )}
           </>
         )}
       </div>

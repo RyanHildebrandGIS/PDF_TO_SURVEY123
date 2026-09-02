@@ -31,13 +31,17 @@ export interface FileMeta {
   error: string | null;
 }
 
-/** A row already in the template's survey sheet, outside the grp_form_content
- * placeholder — shown read-only in Review so it's clear what's already there
- * versus what this PDF is adding. */
-export interface BaseQuestion {
-  type: string;
+/** One node of the template's existing survey structure (outside the
+ * grp_form_content placeholder) — a group with nested items, or a leaf
+ * question — in document order. Shown read-only in Review so it's clear
+ * what's already there, with its real group headers, versus what this PDF
+ * is adding. */
+export interface BaseItem {
+  kind: "group" | "question";
   name: string;
   label: string;
+  type: string | null;
+  questions: BaseItem[] | null;
 }
 
 export interface ChoiceOption {

@@ -7,7 +7,7 @@ from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
 from .models import (
-    BaseQuestion,
+    BaseItem,
     ChoiceListsPayload,
     ChoiceOption,
     FileMeta,
@@ -24,7 +24,7 @@ from .xlsform import (
     build_template_meta,
     export_workbook,
     get_choice_lists,
-    list_base_questions,
+    list_base_structure,
     set_choice_lists,
 )
 
@@ -68,12 +68,12 @@ def list_templates() -> list[TemplateMeta]:
     return [record.meta for record in store.templates.values()]
 
 
-@app.get("/templates/{template_id}/base-questions", response_model=list[BaseQuestion])
-def get_template_base_questions(template_id: str) -> list[BaseQuestion]:
+@app.get("/templates/{template_id}/base-structure", response_model=list[BaseItem])
+def get_template_base_structure(template_id: str) -> list[BaseItem]:
     record = store.templates.get(template_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Template not found")
-    return [BaseQuestion(**row) for row in list_base_questions(record.path)]
+    return [BaseItem(**item) for item in list_base_structure(record.path)]
 
 
 @app.get("/templates/{template_id}/choice-lists", response_model=dict[str, list[ChoiceOption]])

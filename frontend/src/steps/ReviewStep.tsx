@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
-import type { BaseQuestion, ChoiceLists, FileMeta, Question, QuestionPatch } from "../types";
-import { downloadExportUrl, exportFile, getChoiceLists, getQuestions, listBaseQuestions, patchQuestion } from "../api";
+import { useEffect, useMemo, useState } from "react";
+import type { BaseItem, ChoiceLists, FileMeta, Question, QuestionPatch } from "../types";
+import { downloadExportUrl, exportFile, getBaseStructure, getChoiceLists, getQuestions, patchQuestion } from "../api";
+import { BaseItemView, countBaseItems } from "../components/BaseItemView";
 import { ChoiceListsModal } from "../components/ChoiceListsModal";
 import { PdfPane } from "../components/PdfPane";
 import { QuestionRow } from "../components/QuestionRow";
+import { findDuplicates, flattenBaseItems } from "../lib/duplicates";
 import "./ReviewStep.css";
 
-type Filter = "all" | "low" | "skipped";
+type Filter = "all" | "low" | "skipped" | "duplicate";
 const LOW_CONFIDENCE = 0.6;
 
 interface Props {
@@ -32,7 +34,7 @@ export function ReviewStep({
 }: Props) {
   const file = files[activeIndex];
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [baseQuestions, setBaseQuestions] = useState<BaseQuestion[]>([]);
+  const [baseStructure, setBaseStructure] = useState<BaseItem[]>([]);
   const [choiceLists, setChoiceLists] = useState<ChoiceLists>({});
   const [showChoiceLists, setShowChoiceLists] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
@@ -53,9 +55,14 @@ export function ReviewStep({
 
   useEffect(() => {
     if (!templateId) return;
-    listBaseQuestions(templateId).then(setBaseQuestions);
+    getBaseStructure(templateId).then(setBaseStructure);
     getChoiceLists(templateId).then(setChoiceLists);
   }, [templateId]);
+
+  const duplicates = useMemo(
+    () => findDuplicates(questions, flattenBaseItems(baseStructure)),
+    [questions, baseStructure],
+  );
 
   function applyPatch(questionId: string, patch: QuestionPatch) {
     setQuestions((qs) => qs.map((q) => (q.id === questionId ? { ...q, ...patch } : q)));
@@ -66,11 +73,13 @@ export function ReviewStep({
 
   const lowCount = questions.filter((q) => !q.skipped && q.confidence < LOW_CONFIDENCE).length;
   const skippedCount = questions.filter((q) => q.skipped).length;
+  const duplicateCount = questions.filter((q) => !q.skipped && duplicates.has(q.id)).length;
   const unconfirmedCount = questions.filter((q) => !q.skipped && !q.confirmed).length;
   const confirmedCount = questions.filter((q) => !q.skipped && q.confirmed).length;
   const visible = questions.filter((q) => {
     if (filter === "low") return !q.skipped && q.confidence < LOW_CONFIDENCE;
     if (filter === "skipped") return q.skipped;
+    if (filter === "duplicate") return !q.skipped && duplicates.has(q.id);
     return true;
   });
 
@@ -113,6 +122,11 @@ export function ReviewStep({
         {lowCount > 0 && (
           <span className="pill pill-flag">
             {lowCount} low confidence
+          </span>
+        )}
+        {duplicateCount > 0 && (
+          <span className="pill pill-danger">
+            {duplicateCount} possible duplicate{duplicateCount === 1 ? "" : "s"}
           </span>
         )}
         {unconfirmedCount > 0 && (
@@ -163,21 +177,14 @@ export function ReviewStep({
         />
 
         <div className="review-questions">
-          {baseQuestions.length > 0 && (
+          {baseStructure.length > 0 && (
             <details className="review-base-questions">
               <summary className="text-soft">
-                {baseQuestions.length} question{baseQuestions.length === 1 ? "" : "s"} already in this
-                template (unchanged)
+                {countBaseItems(baseStructure)} question{countBaseItems(baseStructure) === 1 ? "" : "s"} already
+                in this template (unchanged)
               </summary>
               <div className="review-base-list">
-                {baseQuestions.map((q, i) => (
-                  <div key={i} className="review-base-row">
-                    <span className="text" style={{ flex: 1 }}>
-                      {q.label}
-                    </span>
-                    <span className="text-soft">{q.type}</span>
-                  </div>
-                ))}
+                <BaseItemView items={baseStructure} />
               </div>
             </details>
           )}
@@ -189,6 +196,14 @@ export function ReviewStep({
             <span className={`pill pill-flag ${filter === "low" ? "pill-ink" : ""}`} onClick={() => setFilter("low")}>
               Low confidence {lowCount}
             </span>
+            {duplicateCount > 0 && (
+              <span
+                className={`pill pill-danger ${filter === "duplicate" ? "pill-ink" : ""}`}
+                onClick={() => setFilter("duplicate")}
+              >
+                Possible duplicates {duplicateCount}
+              </span>
+            )}
             <span className={`pill ${filter === "skipped" ? "pill-ink" : ""}`} onClick={() => setFilter("skipped")}>
               Skipped {skippedCount}
             </span>
@@ -200,6 +215,7 @@ export function ReviewStep({
                 key={q.id}
                 question={q}
                 choiceLists={choiceLists}
+                duplicateOf={duplicates.get(q.id)?.baseLabel ?? null}
                 selected={q.id === selectedId}
                 onSelect={() => {
                   setSelectedId(q.id);

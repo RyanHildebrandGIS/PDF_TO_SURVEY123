@@ -5,6 +5,13 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 export { pdfjsLib };
 
+// Served from public/standard_fonts (copied from pdfjs-dist at build time — see
+// that directory's contents). Without this, pdf.js can throw an
+// UnknownErrorException when a document needs a substitute standard font — this
+// hits XFA rendering in particular, since XFA forms lean on standard fonts more
+// than typical embedded-font PDFs.
+export const STANDARD_FONT_DATA_URL = "/standard_fonts/";
+
 export async function inspectPdf(file: File): Promise<{ pageCount: number; kind: "acroform" | "text" }> {
   const buffer = await file.arrayBuffer();
   const doc = await pdfjsLib.getDocument({ data: buffer }).promise;

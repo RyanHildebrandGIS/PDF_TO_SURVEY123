@@ -24,6 +24,20 @@ class BaseQuestion(BaseModel):
     label: str
 
 
+class BaseItem(BaseModel):
+    """One node in a template's existing survey structure — a group (with nested
+    items) or a leaf question — in document order."""
+
+    kind: Literal["group", "question"]
+    name: str
+    label: str
+    type: Optional[str] = None
+    questions: Optional[list["BaseItem"]] = None
+
+
+BaseItem.model_rebuild()
+
+
 class ChoiceOption(BaseModel):
     name: str
     label: str

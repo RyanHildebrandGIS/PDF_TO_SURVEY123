@@ -49,6 +49,13 @@
   background: var(--gold-tint);
 }
 
+.pill-danger {
+  border-color: var(--red);
+  border-left: 3px solid var(--red);
+  color: var(--red-ink);
+  background: var(--red-tint);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
