@@ -1,8 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import type { BaseItem, ChoiceLists, FileMeta, Question, QuestionPatch } from "../types";
-import { downloadExportUrl, exportFile, getBaseStructure, getChoiceLists, getQuestions, patchQuestion } from "../api";
-import { BaseItemView, countBaseItems } from "../components/BaseItemView";
+import type { BaseItem, ChoiceLists, FileMeta, NewGroup, Question, QuestionPatch } from "../types";
+import {
+  createGroup,
+  deleteGroup,
+  downloadExportUrl,
+  exportFile,
+  getBaseStructure,
+  getChoiceLists,
+  getGroups,
+  getQuestions,
+  patchGroup,
+  patchQuestion,
+} from "../api";
+import { BaseItemView, hasPlaceholder } from "../components/BaseItemView";
 import { ChoiceListsModal } from "../components/ChoiceListsModal";
+import { NewContentSection } from "../components/NewContentSection";
 import { PdfPane } from "../components/PdfPane";
 import { QuestionRow } from "../components/QuestionRow";
 import { findDuplicates, flattenBaseItems } from "../lib/duplicates";
@@ -34,6 +46,7 @@ export function ReviewStep({
 }: Props) {
   const file = files[activeIndex];
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [groups, setGroups] = useState<NewGroup[]>([]);
   const [baseStructure, setBaseStructure] = useState<BaseItem[]>([]);
   const [choiceLists, setChoiceLists] = useState<ChoiceLists>({});
   const [showChoiceLists, setShowChoiceLists] = useState(false);
@@ -51,6 +64,7 @@ export function ReviewStep({
     setExported(null);
     setExportError(null);
     getQuestions(jobId, file.id).then(setQuestions);
+    getGroups(jobId, file.id).then(setGroups);
   }, [jobId, file.id]);
 
   useEffect(() => {
@@ -71,17 +85,61 @@ export function ReviewStep({
     });
   }
 
+  function applyGroupPatch(groupName: string, patch: { label?: string; order?: number }) {
+    setGroups((gs) => gs.map((g) => (g.name === groupName ? { ...g, ...patch } : g)));
+    patchGroup(jobId, file.id, groupName, patch).catch(() => {
+      getGroups(jobId, file.id).then(setGroups);
+    });
+  }
+
+  function handleCreateGroup(label: string) {
+    createGroup(jobId, file.id, label).then((g) => setGroups((gs) => [...gs, g]));
+  }
+
+  function handleDeleteGroup(groupName: string) {
+    setGroups((gs) => gs.filter((g) => g.name !== groupName));
+    setQuestions((qs) => qs.map((q) => (q.group === groupName ? { ...q, group: null } : q)));
+    deleteGroup(jobId, file.id, groupName).catch(() => {
+      getGroups(jobId, file.id).then(setGroups);
+      getQuestions(jobId, file.id).then(setQuestions);
+    });
+  }
+
+  function handleReorderGroup(g: NewGroup, dir: -1 | 1) {
+    const sorted = [...groups].sort((a, b) => a.order - b.order);
+    const idx = sorted.findIndex((x) => x.name === g.name);
+    const swap = sorted[idx + dir];
+    if (!swap) return;
+    applyGroupPatch(g.name, { order: swap.order });
+    applyGroupPatch(swap.name, { order: g.order });
+  }
+
+  function handleReorderQuestion(q: Question, siblings: Question[], dir: -1 | 1) {
+    const idx = siblings.findIndex((x) => x.id === q.id);
+    const swap = siblings[idx + dir];
+    if (!swap) return;
+    applyPatch(q.id, { order: swap.order });
+    applyPatch(swap.id, { order: q.order });
+  }
+
+  function selectQuestion(q: Question) {
+    setSelectedId(q.id);
+    setPage(q.page);
+  }
+
   const lowCount = questions.filter((q) => !q.skipped && q.confidence < LOW_CONFIDENCE).length;
   const skippedCount = questions.filter((q) => q.skipped).length;
   const duplicateCount = questions.filter((q) => !q.skipped && duplicates.has(q.id)).length;
   const unconfirmedCount = questions.filter((q) => !q.skipped && !q.confirmed).length;
   const confirmedCount = questions.filter((q) => !q.skipped && q.confirmed).length;
-  const visible = questions.filter((q) => {
-    if (filter === "low") return !q.skipped && q.confidence < LOW_CONFIDENCE;
-    if (filter === "skipped") return q.skipped;
-    if (filter === "duplicate") return !q.skipped && duplicates.has(q.id);
+
+  const activeQuestions = questions.filter((q) => !q.skipped);
+  const filteredActive = activeQuestions.filter((q) => {
+    if (filter === "low") return q.confidence < LOW_CONFIDENCE;
+    if (filter === "duplicate") return duplicates.has(q.id);
     return true;
   });
+  const skippedQuestions = questions.filter((q) => q.skipped);
 
   function handleConfirmAll() {
     for (const q of questions) {
@@ -110,6 +168,28 @@ export function ReviewStep({
   }
 
   const isLast = activeIndex === files.length - 1;
+
+  function renderNewContent() {
+    return (
+      <div className="new-content-wrap">
+        <div className="review-new-label label">New from this PDF</div>
+        <NewContentSection
+          questions={filteredActive}
+          groups={groups}
+          choiceLists={choiceLists}
+          duplicates={duplicates}
+          selectedId={selectedId}
+          onSelect={selectQuestion}
+          onPatch={applyPatch}
+          onReorderQuestion={handleReorderQuestion}
+          onReorderGroup={handleReorderGroup}
+          onCreateGroup={handleCreateGroup}
+          onRenameGroup={(name, label) => applyGroupPatch(name, { label })}
+          onDeleteGroup={handleDeleteGroup}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="review-step">
@@ -177,18 +257,6 @@ export function ReviewStep({
         />
 
         <div className="review-questions">
-          {baseStructure.length > 0 && (
-            <details className="review-base-questions">
-              <summary className="text-soft">
-                {countBaseItems(baseStructure)} question{countBaseItems(baseStructure) === 1 ? "" : "s"} already
-                in this template (unchanged)
-              </summary>
-              <div className="review-base-list">
-                <BaseItemView items={baseStructure} />
-              </div>
-            </details>
-          )}
-          <div className="review-new-label label">New from this PDF</div>
           <div className="review-filters">
             <span className={`pill ${filter === "all" ? "pill-ink" : ""}`} onClick={() => setFilter("all")}>
               All {questions.length}
@@ -210,20 +278,25 @@ export function ReviewStep({
           </div>
 
           <div className="review-rows">
-            {visible.map((q) => (
-              <QuestionRow
-                key={q.id}
-                question={q}
-                choiceLists={choiceLists}
-                duplicateOf={duplicates.get(q.id)?.baseLabel ?? null}
-                selected={q.id === selectedId}
-                onSelect={() => {
-                  setSelectedId(q.id);
-                  setPage(q.page);
-                }}
-                onPatch={(patch) => applyPatch(q.id, patch)}
-              />
-            ))}
+            {filter === "skipped" ? (
+              skippedQuestions.map((q) => (
+                <QuestionRow
+                  key={q.id}
+                  question={q}
+                  choiceLists={choiceLists}
+                  groups={groups}
+                  duplicateOf={null}
+                  selected={q.id === selectedId}
+                  onSelect={() => selectQuestion(q)}
+                  onPatch={(patch) => applyPatch(q.id, patch)}
+                />
+              ))
+            ) : (
+              <>
+                <BaseItemView items={baseStructure} renderPlaceholder={renderNewContent} />
+                {!hasPlaceholder(baseStructure) && renderNewContent()}
+              </>
+            )}
           </div>
 
           <div className="review-footer">

@@ -39,6 +39,34 @@
   flex: none;
 }
 
+.q-row-reorder {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+}
+
+.q-row-reorder-btn {
+  color: var(--soft);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 11px;
+  padding: 1px 2px;
+}
+
+.q-row-reorder-btn:hover {
+  color: var(--ink);
+}
+
+.q-row-reorder-disabled {
+  visibility: hidden;
+  cursor: default;
+}
+
+.q-row-group {
+  width: 130px;
+  flex: none;
+}
+
 .q-row-edit {
   display: flex;
   gap: var(--sp-2);

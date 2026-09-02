@@ -1,4 +1,4 @@
-import type { BaseItem, ChoiceLists, JobStatus, Question, QuestionPatch, TemplateMeta } from "./types";
+import type { BaseItem, ChoiceLists, JobStatus, NewGroup, Question, QuestionPatch, TemplateMeta } from "./types";
 
 // Empty string = relative to the current origin, i.e. "the backend serving this page".
 // Overridden for `npm run dev` via .env.development, where frontend and backend run
@@ -72,6 +72,37 @@ export function patchQuestion(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   }).then((r) => json(r));
+}
+
+export function getGroups(jobId: string, fileId: string): Promise<NewGroup[]> {
+  return fetch(`${API_BASE}/jobs/${jobId}/files/${fileId}/groups`).then((r) => json(r));
+}
+
+export function createGroup(jobId: string, fileId: string, label: string): Promise<NewGroup> {
+  return fetch(`${API_BASE}/jobs/${jobId}/files/${fileId}/groups`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ label }),
+  }).then((r) => json(r));
+}
+
+export function patchGroup(
+  jobId: string,
+  fileId: string,
+  groupName: string,
+  patch: { label?: string; order?: number },
+): Promise<NewGroup> {
+  return fetch(`${API_BASE}/jobs/${jobId}/files/${fileId}/groups/${groupName}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  }).then((r) => json(r));
+}
+
+export function deleteGroup(jobId: string, fileId: string, groupName: string): Promise<void> {
+  return fetch(`${API_BASE}/jobs/${jobId}/files/${fileId}/groups/${groupName}`, { method: "DELETE" }).then(
+    (r) => json(r),
+  );
 }
 
 export function pdfUrl(jobId: string, fileId: string): string {

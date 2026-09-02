@@ -4,7 +4,7 @@ import re
 
 import openpyxl
 
-from .models import Question, TemplateMeta
+from .models import NewGroup, Question, TemplateMeta
 
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
@@ -108,40 +108,55 @@ def _question_row_type(q: Question) -> str:
     return q.type
 
 
-def _build_survey_rows(questions: list[Question]) -> list[dict[str, str]]:
-    """Build survey-sheet rows for confirmed, non-skipped questions.
+def _row_for_question(q: Question) -> dict[str, str]:
+    row = {"type": _question_row_type(q), "name": q.name, "label": q.label}
+    if q.appearance:
+        row["appearance"] = q.appearance
+    if q.alias:
+        row["bind::esri:fieldalias"] = q.alias
+    return row
 
-    Groups questions by their source PDF page into their own `begin group` /
-    `end group` block when the PDF spans more than one page — a single-page
-    form's questions are inserted flat.
+
+def _build_survey_rows(questions: list[Question], groups: list[NewGroup]) -> list[dict[str, str]]:
+    """Build survey-sheet rows for confirmed, non-skipped questions, organized
+    by the reviewer-defined groups: each group with at least one confirmed
+    question becomes its own `begin group` / `end group` block (in the
+    reviewer's chosen order); questions left ungrouped are inserted flat,
+    ahead of the groups, in their reviewer-chosen order.
     """
-    by_page: dict[int, list[Question]] = {}
+    by_group: dict[str, list[Question]] = {}
+    ungrouped: list[Question] = []
+    group_names = {g.name for g in groups}
     for q in questions:
-        if q.confirmed and not q.skipped:
-            by_page.setdefault(q.page, []).append(q)
-
-    pages = sorted(by_page)
-    use_subgroups = len(pages) > 1
+        if not q.confirmed or q.skipped:
+            continue
+        if q.group and q.group in group_names:
+            by_group.setdefault(q.group, []).append(q)
+        else:
+            ungrouped.append(q)
 
     rows: list[dict[str, str]] = []
-    for page in pages:
-        if use_subgroups:
-            rows.append({"type": "begin group", "name": f"grp_page_{page}", "label": f"Page {page}"})
-        for q in by_page[page]:
-            row = {"type": _question_row_type(q), "name": q.name, "label": q.label}
-            if q.appearance:
-                row["appearance"] = q.appearance
-            rows.append(row)
-        if use_subgroups:
-            rows.append({"type": "end group"})
+    for q in sorted(ungrouped, key=lambda q: q.order):
+        rows.append(_row_for_question(q))
+
+    for g in sorted(groups, key=lambda g: g.order):
+        members = by_group.get(g.name)
+        if not members:
+            continue
+        rows.append({"type": "begin group", "name": g.name, "label": g.label})
+        for q in sorted(members, key=lambda q: q.order):
+            rows.append(_row_for_question(q))
+        rows.append({"type": "end group"})
     return rows
 
 
 def list_base_structure(template_path: str) -> list[dict]:
-    """The template's own fixed survey content — everything outside the
-    grp_form_content placeholder — as a nested tree of groups and questions in
-    document order, so the reviewer can see the template's real structure (with
-    its group headers) rather than a flat list."""
+    """The template's own fixed survey content as a nested tree of groups and
+    questions in document order, so the reviewer can see the template's real
+    structure (with its group headers) rather than a flat list. In place of the
+    grp_form_content placeholder — wherever it sits in the template — a single
+    `kind: "placeholder"` marker is emitted, so the caller can render this PDF's
+    new content inline at the exact spot it will be inserted at export time."""
     wb = openpyxl.load_workbook(template_path, data_only=True)
     if "survey" not in wb.sheetnames:
         return []
@@ -154,6 +169,7 @@ def list_base_structure(template_path: str) -> list[dict]:
 
     placeholder = _find_placeholder_group(ws, col_idx)
     skip_rows = set(range(placeholder[0], placeholder[1] + 1)) if placeholder else set()
+    placeholder_row = placeholder[0] if placeholder else None
 
     items: list[dict] = []
     stack: list[dict] = []
@@ -163,6 +179,8 @@ def list_base_structure(template_path: str) -> list[dict]:
 
     for r in range(2, ws.max_row + 1):
         if r in skip_rows:
+            if r == placeholder_row:
+                container().append({"kind": "placeholder", "name": PLACEHOLDER_GROUP_NAME, "label": ""})
             continue
         raw_type = ws.cell(row=r, column=col_idx["type"]).value
         t = str(raw_type or "").strip()
@@ -242,7 +260,7 @@ def set_choice_lists(path: str, lists: dict[str, list[dict[str, str]]]) -> None:
     wb.save(path)
 
 
-def export_workbook(template_path: str, questions: list[Question]) -> bytes:
+def export_workbook(template_path: str, questions: list[Question], groups: list[NewGroup]) -> bytes:
     wb = openpyxl.load_workbook(template_path)
     if "survey" not in wb.sheetnames:
         raise InvalidTemplateError("Template workbook is missing a survey sheet")
@@ -252,7 +270,7 @@ def export_workbook(template_path: str, questions: list[Question]) -> bytes:
     if "type" not in col_idx or "name" not in col_idx or "label" not in col_idx:
         raise InvalidTemplateError("Template survey sheet must have type, name and label columns")
 
-    rows = _build_survey_rows(questions)
+    rows = _build_survey_rows(questions, groups)
     placeholder = _find_placeholder_group(ws, col_idx)
 
     insert_at = placeholder[1] if placeholder else ws.max_row + 1

@@ -18,17 +18,12 @@ class TemplateMeta(BaseModel):
     geopoint_required: bool
 
 
-class BaseQuestion(BaseModel):
-    type: str
-    name: str
-    label: str
-
-
 class BaseItem(BaseModel):
     """One node in a template's existing survey structure — a group (with nested
-    items) or a leaf question — in document order."""
+    items), a leaf question, or the placeholder marker showing where this PDF's
+    new content will be inserted — in document order."""
 
-    kind: Literal["group", "question"]
+    kind: Literal["group", "question", "placeholder"]
     name: str
     label: str
     type: Optional[str] = None
@@ -64,6 +59,8 @@ class Question(BaseModel):
     order: int
     label: str
     name: str
+    alias: Optional[str] = None
+    group: Optional[str] = None
     type: XLSFormType
     choice_list_id: Optional[str] = None
     appearance: Optional[str] = None
@@ -77,12 +74,32 @@ class Question(BaseModel):
 
 class QuestionPatch(BaseModel):
     label: Optional[str] = None
-    name: Optional[str] = None
+    alias: Optional[str] = None
+    group: Optional[str] = None
+    order: Optional[int] = None
     type: Optional[XLSFormType] = None
     choice_list_id: Optional[str] = None
     confirmed: Optional[bool] = None
     skipped: Optional[bool] = None
     skip_reason: Optional[str] = None
+
+
+class NewGroup(BaseModel):
+    """A group the reviewer created to organize this PDF's new content —
+    inserted as its own `begin group`/`end group` block at export time."""
+
+    name: str
+    label: str
+    order: int
+
+
+class NewGroupCreate(BaseModel):
+    label: str
+
+
+class NewGroupPatch(BaseModel):
+    label: Optional[str] = None
+    order: Optional[int] = None
 
 
 class StartJobRequest(BaseModel):

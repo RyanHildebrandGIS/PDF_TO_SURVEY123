@@ -50,6 +50,12 @@
   background: var(--gold-tint);
 }
 
+.xfa-field-selected {
+  outline: 2px solid var(--acc) !important;
+  outline-offset: 1px;
+  background-color: var(--gold-tint) !important;
+}
+
 .pdf-pane-unavailable {
   flex: 1;
   display: flex;

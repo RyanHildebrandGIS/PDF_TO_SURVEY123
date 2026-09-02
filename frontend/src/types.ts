@@ -31,17 +31,25 @@ export interface FileMeta {
   error: string | null;
 }
 
-/** One node of the template's existing survey structure (outside the
- * grp_form_content placeholder) — a group with nested items, or a leaf
- * question — in document order. Shown read-only in Review so it's clear
- * what's already there, with its real group headers, versus what this PDF
- * is adding. */
+/** One node of the template's existing survey structure — a group with
+ * nested items, a leaf question, or the placeholder marker showing exactly
+ * where this PDF's new content will be inserted — in document order. Shown
+ * read-only in Review so it's clear what's already there, with its real
+ * group headers, versus what this PDF is adding. */
 export interface BaseItem {
-  kind: "group" | "question";
+  kind: "group" | "question" | "placeholder";
   name: string;
   label: string;
   type: string | null;
   questions: BaseItem[] | null;
+}
+
+/** A group the reviewer created to organize this PDF's new content — becomes
+ * its own begin group/end group block at export time. */
+export interface NewGroup {
+  name: string;
+  label: string;
+  order: number;
 }
 
 export interface ChoiceOption {
@@ -62,6 +70,8 @@ export interface Question {
   order: number;
   label: string;
   name: string;
+  alias: string | null;
+  group: string | null;
   type: XLSFormType;
   choice_list_id: string | null;
   appearance: string | null;
@@ -75,7 +85,9 @@ export interface Question {
 
 export interface QuestionPatch {
   label?: string;
-  name?: string;
+  alias?: string | null;
+  group?: string | null;
+  order?: number;
   type?: XLSFormType;
   choice_list_id?: string | null;
   confirmed?: boolean;

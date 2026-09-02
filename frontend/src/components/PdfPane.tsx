@@ -38,6 +38,7 @@ export function PdfPane({
   const xfaContainerRef = useRef<HTMLDivElement>(null);
   const linkServiceRef = useRef<PDFLinkService | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [xfaRenderTick, setXfaRenderTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +97,7 @@ export function PdfPane({
             intent: "display",
           });
           setSize({ width: viewport.width, height: viewport.height });
+          setXfaRenderTick((t) => t + 1);
           return;
         }
 
@@ -115,6 +117,37 @@ export function PdfPane({
       cancelled = true;
     };
   }, [doc, page, scale, isXfa]);
+
+  // The rendered XFA form's field wrappers carry the same raw field name pdf.js
+  // read from the XFA template (as `xfaname`) that extraction slugified into
+  // `q.name` — lowercasing both is enough to line them up, so a question row
+  // click can highlight (and a field click select) without any position data.
+  useEffect(() => {
+    if (!isXfa) return;
+    const container = xfaContainerRef.current;
+    if (!container) return;
+    container
+      .querySelectorAll<HTMLElement>(".xfa-field-selected")
+      .forEach((el) => el.classList.remove("xfa-field-selected"));
+    if (!selectedQuestionId) return;
+    const q = questions.find((qq) => qq.id === selectedQuestionId);
+    if (!q) return;
+    const target = Array.from(container.querySelectorAll<HTMLElement>(".xfaField[xfaname]")).find(
+      (el) => el.getAttribute("xfaname")?.toLowerCase() === q.name.toLowerCase(),
+    );
+    if (target) {
+      target.classList.add("xfa-field-selected");
+      target.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }, [selectedQuestionId, isXfa, questions, xfaRenderTick]);
+
+  function handleXfaContainerClick(e: React.MouseEvent<HTMLDivElement>) {
+    const fieldEl = (e.target as HTMLElement).closest<HTMLElement>(".xfaField[xfaname]");
+    const name = fieldEl?.getAttribute("xfaname")?.toLowerCase();
+    if (!name) return;
+    const q = questions.find((qq) => qq.name.toLowerCase() === name && !qq.skipped);
+    if (q) onSelectQuestion(q.id);
+  }
 
   const pageQuestions = questions.filter((q) => q.page === page && !q.skipped);
 
@@ -145,7 +178,7 @@ export function PdfPane({
       </div>
       <div className="pdf-pane-scroll">
         <div className="pdf-pane-canvas-wrap" style={{ width: size.width, height: size.height }}>
-          {isXfa ? <div ref={xfaContainerRef} /> : <canvas ref={canvasRef} />}
+          {isXfa ? <div ref={xfaContainerRef} onClick={handleXfaContainerClick} /> : <canvas ref={canvasRef} />}
           {!isXfa &&
             pageQuestions.map((q) => {
               const [left, top, right, bottom] = q.bbox;

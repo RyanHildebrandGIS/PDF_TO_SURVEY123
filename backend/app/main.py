@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +13,9 @@ from .models import (
     ChoiceOption,
     FileMeta,
     JobStatus,
+    NewGroup,
+    NewGroupCreate,
+    NewGroupPatch,
     Question,
     QuestionPatch,
     StartJobRequest,
@@ -229,6 +233,56 @@ def get_pdf(job_id: str, file_id: str) -> Response:
     return Response(content=file_record.pdf_bytes, media_type="application/pdf")
 
 
+def _slugify_group_name(label: str, existing: set[str]) -> str:
+    base = re.sub(r"[^a-z0-9]+", "_", label.strip().lower()).strip("_") or "group"
+    if not base[0].isalpha():
+        base = f"grp_{base}"
+    name = base
+    n = 2
+    while name in existing:
+        name = f"{base}_{n}"
+        n += 1
+    return name
+
+
+@app.get("/jobs/{job_id}/files/{file_id}/groups", response_model=list[NewGroup])
+def list_groups(job_id: str, file_id: str) -> list[NewGroup]:
+    return _get_file(job_id, file_id).groups
+
+
+@app.post("/jobs/{job_id}/files/{file_id}/groups", response_model=NewGroup)
+def create_group(job_id: str, file_id: str, body: NewGroupCreate) -> NewGroup:
+    file_record = _get_file(job_id, file_id)
+    existing = {g.name for g in file_record.groups}
+    name = _slugify_group_name(body.label, existing)
+    order = max([g.order for g in file_record.groups], default=0) + 1
+    group = NewGroup(name=name, label=body.label.strip() or name, order=order)
+    file_record.groups.append(group)
+    return group
+
+
+@app.patch("/jobs/{job_id}/files/{file_id}/groups/{group_name}", response_model=NewGroup)
+def patch_group(job_id: str, file_id: str, group_name: str, patch: NewGroupPatch) -> NewGroup:
+    file_record = _get_file(job_id, file_id)
+    for g in file_record.groups:
+        if g.name == group_name:
+            update = patch.model_dump(exclude_unset=True)
+            for k, v in update.items():
+                setattr(g, k, v)
+            return g
+    raise HTTPException(status_code=404, detail="Group not found")
+
+
+@app.delete("/jobs/{job_id}/files/{file_id}/groups/{group_name}")
+def delete_group(job_id: str, file_id: str, group_name: str) -> dict:
+    file_record = _get_file(job_id, file_id)
+    file_record.groups = [g for g in file_record.groups if g.name != group_name]
+    for q in file_record.questions:
+        if q.group == group_name:
+            q.group = None
+    return {"ok": True}
+
+
 @app.post("/jobs/{job_id}/files/{file_id}/export")
 def export_file(job_id: str, file_id: str) -> dict:
     job = store.jobs.get(job_id)
@@ -242,7 +296,7 @@ def export_file(job_id: str, file_id: str) -> dict:
         raise HTTPException(status_code=404, detail="Template not found")
 
     try:
-        content = export_workbook(template.path, file_record.questions)
+        content = export_workbook(template.path, file_record.questions, file_record.groups)
     except InvalidTemplateError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

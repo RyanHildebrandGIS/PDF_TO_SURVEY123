@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ChoiceLists, Question, QuestionPatch, XLSFormType } from "../types";
+import type { ChoiceLists, NewGroup, Question, QuestionPatch, XLSFormType } from "../types";
 import "./QuestionRow.css";
 
 const TYPES: XLSFormType[] = [
@@ -19,21 +19,35 @@ const LOW_CONFIDENCE = 0.6;
 interface Props {
   question: Question;
   choiceLists: ChoiceLists;
+  groups: NewGroup[];
   duplicateOf: string | null;
   selected: boolean;
   onSelect: () => void;
   onPatch: (patch: QuestionPatch) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
-export function QuestionRow({ question: q, choiceLists, duplicateOf, selected, onSelect, onPatch }: Props) {
+export function QuestionRow({
+  question: q,
+  choiceLists,
+  groups,
+  duplicateOf,
+  selected,
+  onSelect,
+  onPatch,
+  onMoveUp,
+  onMoveDown,
+}: Props) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(q.label);
-  const [name, setName] = useState(q.name);
+  const [alias, setAlias] = useState(q.alias ?? "");
   const lowConfidence = q.confidence < LOW_CONFIDENCE;
 
   function saveEdit() {
     setEditing(false);
-    if (label !== q.label || name !== q.name) onPatch({ label, name });
+    const nextAlias = alias.trim() || null;
+    if (label !== q.label || nextAlias !== q.alias) onPatch({ label, alias: nextAlias });
   }
 
   if (q.skipped) {
@@ -66,26 +80,65 @@ export function QuestionRow({ question: q, choiceLists, duplicateOf, selected, o
       className={`q-row ${lowConfidence && !q.confirmed ? "q-row-flag" : ""} ${flagDuplicate ? "q-row-duplicate" : ""} ${selected ? "q-row-selected" : ""}`}
       onClick={onSelect}
     >
+      {(onMoveUp || onMoveDown) && (
+        <div className="q-row-reorder" onClick={(e) => e.stopPropagation()}>
+          <span className={`q-row-reorder-btn ${!onMoveUp ? "q-row-reorder-disabled" : ""}`} onClick={() => onMoveUp?.()}>
+            ↑
+          </span>
+          <span className={`q-row-reorder-btn ${!onMoveDown ? "q-row-reorder-disabled" : ""}`} onClick={() => onMoveDown?.()}>
+            ↓
+          </span>
+        </div>
+      )}
       <span className="text-soft q-row-index">{q.order}</span>
 
       <div style={{ flex: 1, minWidth: 0 }} onDoubleClick={() => setEditing(true)}>
         {editing ? (
           <div className="q-row-edit" onClick={(e) => e.stopPropagation()}>
-            <input className="select" value={label} onChange={(e) => setLabel(e.target.value)} autoFocus />
-            <input className="select" value={name} onChange={(e) => setName(e.target.value)} onBlur={saveEdit} />
+            <input
+              className="select"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Question label"
+              autoFocus
+            />
+            <input
+              className="select"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              onBlur={saveEdit}
+              placeholder="Alias (optional display name)"
+            />
           </div>
         ) : (
           <>
             <div className="text" style={{ fontWeight: 600 }}>
               {q.label}
             </div>
-            <div className="text-soft">name: {q.name}</div>
+            <div className="text-soft">
+              field: {q.name}
+              {q.alias ? ` · alias: ${q.alias}` : ""}
+            </div>
             {flagDuplicate && (
               <div className="q-row-duplicate-note">may duplicate "{duplicateOf}" already in the template</div>
             )}
           </>
         )}
       </div>
+
+      <select
+        className="select q-row-group"
+        value={q.group ?? ""}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onPatch({ group: e.target.value || null })}
+      >
+        <option value="">— no group —</option>
+        {groups.map((g) => (
+          <option key={g.name} value={g.name}>
+            {g.label}
+          </option>
+        ))}
+      </select>
 
       <select
         className={`select ${lowConfidence ? "select-flag" : ""}`}

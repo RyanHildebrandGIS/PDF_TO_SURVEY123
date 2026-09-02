@@ -1,0 +1,9 @@
+.new-content-add-group {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+}
+
+.new-content-add-group .select {
+  flex: 1;
+}

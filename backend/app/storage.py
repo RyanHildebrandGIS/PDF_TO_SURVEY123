@@ -1,7 +1,7 @@
 import uuid
 from dataclasses import dataclass, field
 
-from .models import FileMeta, Question, TemplateMeta
+from .models import FileMeta, NewGroup, Question, TemplateMeta
 
 
 @dataclass
@@ -16,6 +16,7 @@ class FileRecord:
     pdf_bytes: bytes
     kind_detected: str
     questions: list[Question] = field(default_factory=list)
+    groups: list[NewGroup] = field(default_factory=list)
 
 
 @dataclass
