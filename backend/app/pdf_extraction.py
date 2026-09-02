@@ -295,7 +295,18 @@ def _xfa_field_label(el) -> str | None:
         texts = [t.text.strip() for t in child.iter() if _local_tag(t) == "text" and t.text and t.text.strip()]
         if texts:
             return " ".join(texts)
-        paras = [t.text.strip() for t in child.iter() if _local_tag(t) == "p" and t.text and t.text.strip()]
+        # HTML-in-XFA captions (<exData contentType="text/html"><body><p>...</p></body>)
+        # can nest inline tags like <span> for tab stops — a <p>'s own `.text` only
+        # covers text before the first nested tag, so text after e.g. a numbering
+        # <span> (the actual label) would otherwise be silently dropped. itertext()
+        # walks the whole subtree in document order, including text after nested tags.
+        paras = []
+        for p in child.iter():
+            if _local_tag(p) != "p":
+                continue
+            full = re.sub(r"\s+", " ", "".join(p.itertext())).strip()
+            if full:
+                paras.append(full)
         if paras:
             return " ".join(paras)
     for child in el:
