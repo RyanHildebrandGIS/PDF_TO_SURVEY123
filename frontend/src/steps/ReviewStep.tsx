@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { BaseItem, ChoiceLists, FileMeta, NewGroup, Question, QuestionPatch } from "../types";
 import {
   createGroup,
@@ -22,6 +22,13 @@ import "./ReviewStep.css";
 
 type Filter = "all" | "low" | "skipped" | "duplicate";
 const LOW_CONFIDENCE = 0.6;
+
+/** A sensible starter group name from the PDF's own filename, e.g.
+ * "DOTCEM4102_2.pdf" -> "DOTCEM4102 2". */
+function titleFromFilename(name: string): string {
+  const base = name.replace(/\.pdf$/i, "");
+  return base.replace(/[_-]+/g, " ").trim() || "New content";
+}
 
 interface Props {
   jobId: string;
@@ -56,6 +63,7 @@ export function ReviewStep({
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [exported, setExported] = useState<{ export_id: string; filename: string } | null>(null);
+  const autoGroupedFiles = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setPage(1);
@@ -64,8 +72,20 @@ export function ReviewStep({
     setExported(null);
     setExportError(null);
     getQuestions(jobId, file.id).then(setQuestions);
-    getGroups(jobId, file.id).then(setGroups);
-  }, [jobId, file.id]);
+
+    // First time reviewing this file: start it off with one group named after
+    // the PDF, so there's somewhere sensible to drop its fields right away.
+    const canAutoCreate = !autoGroupedFiles.current.has(file.id);
+    if (canAutoCreate) autoGroupedFiles.current.add(file.id);
+    getGroups(jobId, file.id).then((gs) => {
+      setGroups(gs);
+      if (canAutoCreate && gs.length === 0) {
+        createGroup(jobId, file.id, titleFromFilename(file.name)).then((g) =>
+          setGroups((prev) => (prev.length === 0 ? [g] : prev)),
+        );
+      }
+    });
+  }, [jobId, file.id, file.name]);
 
   useEffect(() => {
     if (!templateId) return;
@@ -112,14 +132,6 @@ export function ReviewStep({
     if (!swap) return;
     applyGroupPatch(g.name, { order: swap.order });
     applyGroupPatch(swap.name, { order: g.order });
-  }
-
-  function handleReorderQuestion(q: Question, siblings: Question[], dir: -1 | 1) {
-    const idx = siblings.findIndex((x) => x.id === q.id);
-    const swap = siblings[idx + dir];
-    if (!swap) return;
-    applyPatch(q.id, { order: swap.order });
-    applyPatch(swap.id, { order: q.order });
   }
 
   function selectQuestion(q: Question) {
@@ -181,7 +193,6 @@ export function ReviewStep({
           selectedId={selectedId}
           onSelect={selectQuestion}
           onPatch={applyPatch}
-          onReorderQuestion={handleReorderQuestion}
           onReorderGroup={handleReorderGroup}
           onCreateGroup={handleCreateGroup}
           onRenameGroup={(name, label) => applyGroupPatch(name, { label })}

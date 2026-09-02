@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { XfaLayer } from "pdfjs-dist";
 import { PDFLinkService } from "pdfjs-dist/web/pdf_viewer.mjs";
@@ -7,6 +7,24 @@ import { pdfUrl } from "../api";
 import type { Question } from "../types";
 import "./PdfPane.css";
 import "./XfaLayer.css";
+
+// The XFA tree pdf.js hands back from `getXfa()` (before any DOM is built) is
+// plain JSON: `{ name, attributes: { xfaName, class: [...] }, children: [...] }`.
+// Field wrappers carry class "xfaField" and the same raw field name we
+// slugified into `q.name` — walking this (cheap, no rendering) lets us know
+// which page a field actually lands on before the reviewer clicks it, since
+// XFA layout is dynamic and extraction can only ever guess page 1.
+interface XfaNode {
+  attributes?: { xfaName?: string; class?: string[] };
+  children?: XfaNode[];
+}
+
+function collectFieldNames(node: XfaNode | null | undefined, out: Set<string>): void {
+  if (!node) return;
+  const { xfaName, class: cls } = node.attributes ?? {};
+  if (xfaName && cls?.includes("xfaField")) out.add(xfaName.toLowerCase());
+  node.children?.forEach((child) => collectFieldNames(child, out));
+}
 
 interface Props {
   jobId: string;
@@ -39,15 +57,17 @@ export function PdfPane({
   const linkServiceRef = useRef<PDFLinkService | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [xfaRenderTick, setXfaRenderTick] = useState(0);
+  const fieldPageMapRef = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     let cancelled = false;
+    fieldPageMapRef.current = new Map();
     // enableXfa: true is what makes pdf.js render the real form layout for dynamic
     // (LiveCycle/XFA) PDFs — the same mechanism Firefox's built-in viewer uses for
     // these government forms — instead of the static "open in Adobe Reader" page.
     pdfjsLib
       .getDocument({ url: pdfUrl(jobId, fileId), enableXfa: true, standardFontDataUrl: STANDARD_FONT_DATA_URL })
-      .promise.then((loaded) => {
+      .promise.then(async (loaded) => {
         if (cancelled) return;
         if (!linkServiceRef.current) linkServiceRef.current = new PDFLinkService();
         linkServiceRef.current.setDocument(loaded);
@@ -55,6 +75,26 @@ export function PdfPane({
         setIsXfa(loaded.isPureXfa);
         setNumPages(loaded.numPages);
         onPageCount(loaded.numPages);
+
+        if (loaded.isPureXfa) {
+          const map = new Map<string, number>();
+          for (let p = 1; p <= loaded.numPages; p++) {
+            if (cancelled) return;
+            try {
+              const pdfPage = await loaded.getPage(p);
+              const xfaHtml = await pdfPage.getXfa();
+              const names = new Set<string>();
+              collectFieldNames(xfaHtml as XfaNode, names);
+              names.forEach((n) => {
+                if (!map.has(n)) map.set(n, p);
+              });
+            } catch {
+              // A page that fails to lay out just isn't in the map — selecting one
+              // of its fields falls back to no page hop instead of breaking this.
+            }
+          }
+          if (!cancelled) fieldPageMapRef.current = map;
+        }
       })
       .catch(() => {
         // pdf.js's XFA layout engine can throw on real-world forms with deeply
@@ -118,6 +158,23 @@ export function PdfPane({
     };
   }, [doc, page, scale, isXfa]);
 
+  // Only the selected question's own field name should ever cause a re-scan —
+  // depending on the full `questions` array instead would re-run this (and
+  // re-trigger the scroll) on every unrelated edit elsewhere in the review list.
+  const selectedName = useMemo(
+    () => questions.find((q) => q.id === selectedQuestionId)?.name ?? null,
+    [questions, selectedQuestionId],
+  );
+
+  // Jump to whichever page actually renders the selected field before trying to
+  // highlight it — extraction can only ever guess page 1 for XFA fields, since
+  // real page placement isn't known until pdf.js lays the form out.
+  useEffect(() => {
+    if (!isXfa || !selectedName) return;
+    const targetPage = fieldPageMapRef.current.get(selectedName.toLowerCase());
+    if (targetPage && targetPage !== page) onPageChange(targetPage);
+  }, [isXfa, selectedName, page, onPageChange]);
+
   // The rendered XFA form's field wrappers carry the same raw field name pdf.js
   // read from the XFA template (as `xfaname`) that extraction slugified into
   // `q.name` — lowercasing both is enough to line them up, so a question row
@@ -129,17 +186,15 @@ export function PdfPane({
     container
       .querySelectorAll<HTMLElement>(".xfa-field-selected")
       .forEach((el) => el.classList.remove("xfa-field-selected"));
-    if (!selectedQuestionId) return;
-    const q = questions.find((qq) => qq.id === selectedQuestionId);
-    if (!q) return;
+    if (!selectedName) return;
     const target = Array.from(container.querySelectorAll<HTMLElement>(".xfaField[xfaname]")).find(
-      (el) => el.getAttribute("xfaname")?.toLowerCase() === q.name.toLowerCase(),
+      (el) => el.getAttribute("xfaname")?.toLowerCase() === selectedName.toLowerCase(),
     );
     if (target) {
       target.classList.add("xfa-field-selected");
       target.scrollIntoView({ block: "center", behavior: "smooth" });
     }
-  }, [selectedQuestionId, isXfa, questions, xfaRenderTick]);
+  }, [selectedName, isXfa, xfaRenderTick]);
 
   function handleXfaContainerClick(e: React.MouseEvent<HTMLDivElement>) {
     const fieldEl = (e.target as HTMLElement).closest<HTMLElement>(".xfaField[xfaname]");

@@ -1,3 +1,15 @@
+.new-content-droppable {
+  min-height: var(--sp-2);
+  border-radius: 4px;
+  transition: background-color 0.1s ease;
+}
+
+.new-content-droppable-over {
+  background: var(--gold-tint);
+  outline: 1.5px dashed var(--gold);
+  outline-offset: -1px;
+}
+
 .new-content-add-group {
   display: flex;
   gap: var(--sp-2);

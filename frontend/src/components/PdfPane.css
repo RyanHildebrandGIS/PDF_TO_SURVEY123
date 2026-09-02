@@ -54,6 +54,7 @@
   outline: 2px solid var(--acc) !important;
   outline-offset: 1px;
   background-color: var(--gold-tint) !important;
+  transition: outline-color 0.15s ease, background-color 0.15s ease;
 }
 
 .pdf-pane-unavailable {

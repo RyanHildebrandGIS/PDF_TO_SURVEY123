@@ -39,27 +39,22 @@
   flex: none;
 }
 
-.q-row-reorder {
-  display: flex;
-  flex-direction: column;
+.q-row-drag-handle {
   flex: none;
-}
-
-.q-row-reorder-btn {
   color: var(--soft);
-  cursor: pointer;
+  cursor: grab;
+  font-size: 15px;
   line-height: 1;
-  font-size: 11px;
-  padding: 1px 2px;
+  padding: 0 var(--sp-1);
+  touch-action: none;
 }
 
-.q-row-reorder-btn:hover {
+.q-row-drag-handle:hover {
   color: var(--ink);
 }
 
-.q-row-reorder-disabled {
-  visibility: hidden;
-  cursor: default;
+.q-row-drag-handle:active {
+  cursor: grabbing;
 }
 
 .q-row-group {

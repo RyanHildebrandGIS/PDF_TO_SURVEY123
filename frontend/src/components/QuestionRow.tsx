@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core";
 import type { ChoiceLists, NewGroup, Question, QuestionPatch, XLSFormType } from "../types";
 import "./QuestionRow.css";
 
@@ -16,6 +17,11 @@ const TYPES: XLSFormType[] = [
 
 const LOW_CONFIDENCE = 0.6;
 
+interface DragHandleProps {
+  attributes: DraggableAttributes;
+  listeners: DraggableSyntheticListeners;
+}
+
 interface Props {
   question: Question;
   choiceLists: ChoiceLists;
@@ -24,8 +30,7 @@ interface Props {
   selected: boolean;
   onSelect: () => void;
   onPatch: (patch: QuestionPatch) => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
+  dragHandleProps?: DragHandleProps;
 }
 
 export function QuestionRow({
@@ -36,8 +41,7 @@ export function QuestionRow({
   selected,
   onSelect,
   onPatch,
-  onMoveUp,
-  onMoveDown,
+  dragHandleProps,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(q.label);
@@ -60,13 +64,7 @@ export function QuestionRow({
           </div>
           <div className="text-soft">skipped{q.skip_reason ? ` — ${q.skip_reason}` : ""}</div>
         </div>
-        <span
-          className="q-row-undo"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPatch({ skipped: false });
-          }}
-        >
+        <span className="q-row-undo" onClick={() => onPatch({ skipped: false })}>
           ↺ Undo
         </span>
       </div>
@@ -80,15 +78,15 @@ export function QuestionRow({
       className={`q-row ${lowConfidence && !q.confirmed ? "q-row-flag" : ""} ${flagDuplicate ? "q-row-duplicate" : ""} ${selected ? "q-row-selected" : ""}`}
       onClick={onSelect}
     >
-      {(onMoveUp || onMoveDown) && (
-        <div className="q-row-reorder" onClick={(e) => e.stopPropagation()}>
-          <span className={`q-row-reorder-btn ${!onMoveUp ? "q-row-reorder-disabled" : ""}`} onClick={() => onMoveUp?.()}>
-            ↑
-          </span>
-          <span className={`q-row-reorder-btn ${!onMoveDown ? "q-row-reorder-disabled" : ""}`} onClick={() => onMoveDown?.()}>
-            ↓
-          </span>
-        </div>
+      {dragHandleProps && (
+        <span
+          className="q-row-drag-handle"
+          onClick={(e) => e.stopPropagation()}
+          {...dragHandleProps.attributes}
+          {...dragHandleProps.listeners}
+        >
+          ⠿
+        </span>
       )}
       <span className="text-soft q-row-index">{q.order}</span>
 
@@ -129,7 +127,6 @@ export function QuestionRow({
       <select
         className="select q-row-group"
         value={q.group ?? ""}
-        onClick={(e) => e.stopPropagation()}
         onChange={(e) => onPatch({ group: e.target.value || null })}
       >
         <option value="">— no group —</option>
@@ -143,7 +140,6 @@ export function QuestionRow({
       <select
         className={`select ${lowConfidence ? "select-flag" : ""}`}
         value={q.type}
-        onClick={(e) => e.stopPropagation()}
         onChange={(e) => onPatch({ type: e.target.value as XLSFormType, confirmed: true })}
       >
         {TYPES.map((t) => (
@@ -162,7 +158,6 @@ export function QuestionRow({
             <select
               className={`select q-row-list ${isUnknown ? "select-flag" : ""}`}
               value={current}
-              onClick={(e) => e.stopPropagation()}
               onChange={(e) => onPatch({ choice_list_id: e.target.value || null, confirmed: true })}
               title={isUnknown ? `"${current}" isn't a list in this template yet — add it under Choice lists` : undefined}
             >
@@ -180,23 +175,14 @@ export function QuestionRow({
       {q.confirmed ? (
         <span className="text-soft">✓</span>
       ) : (
-        <button
-          className="btn btn-sm pill-flag"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPatch({ confirmed: true });
-          }}
-        >
+        <button className="btn btn-sm pill-flag" onClick={() => onPatch({ confirmed: true })}>
           Confirm
         </button>
       )}
 
       <span
         className="q-row-skip"
-        onClick={(e) => {
-          e.stopPropagation();
-          onPatch({ skipped: true, skip_reason: "skipped by reviewer" });
-        }}
+        onClick={() => onPatch({ skipped: true, skip_reason: "skipped by reviewer" })}
       >
         ✕
       </span>
