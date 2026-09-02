@@ -145,7 +145,6 @@ export function ReviewStep({
             const q = questions.find((q) => q.id === id);
             if (q) setPage(q.page);
           }}
-          previewUnavailable={file.kind === "xfa"}
         />
 
         <div className="review-questions">
