@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import type { BaseQuestion, FileMeta, Question, QuestionPatch } from "../types";
-import { downloadExportUrl, exportFile, getQuestions, listBaseQuestions, patchQuestion } from "../api";
+import type { BaseQuestion, ChoiceLists, FileMeta, Question, QuestionPatch } from "../types";
+import { downloadExportUrl, exportFile, getChoiceLists, getQuestions, listBaseQuestions, patchQuestion } from "../api";
+import { ChoiceListsModal } from "../components/ChoiceListsModal";
 import { PdfPane } from "../components/PdfPane";
 import { QuestionRow } from "../components/QuestionRow";
 import "./ReviewStep.css";
@@ -32,6 +33,8 @@ export function ReviewStep({
   const file = files[activeIndex];
   const [questions, setQuestions] = useState<Question[]>([]);
   const [baseQuestions, setBaseQuestions] = useState<BaseQuestion[]>([]);
+  const [choiceLists, setChoiceLists] = useState<ChoiceLists>({});
+  const [showChoiceLists, setShowChoiceLists] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -51,6 +54,7 @@ export function ReviewStep({
   useEffect(() => {
     if (!templateId) return;
     listBaseQuestions(templateId).then(setBaseQuestions);
+    getChoiceLists(templateId).then(setChoiceLists);
   }, [templateId]);
 
   function applyPatch(questionId: string, patch: QuestionPatch) {
@@ -116,10 +120,21 @@ export function ReviewStep({
             Confirm all {unconfirmedCount}
           </button>
         )}
+        <button className="btn" onClick={() => setShowChoiceLists(true)}>
+          Choice lists
+        </button>
         <button className="btn btn-primary" disabled={exporting} onClick={handleExport}>
           {exporting ? "Exporting…" : "Export .xlsx"}
         </button>
       </div>
+
+      {showChoiceLists && (
+        <ChoiceListsModal
+          templateId={templateId}
+          onClose={() => setShowChoiceLists(false)}
+          onSaved={setChoiceLists}
+        />
+      )}
 
       {exportError && <div className="review-export-error text-soft">{exportError}</div>}
       {exported && (
@@ -184,6 +199,7 @@ export function ReviewStep({
               <QuestionRow
                 key={q.id}
                 question={q}
+                choiceLists={choiceLists}
                 selected={q.id === selectedId}
                 onSelect={() => {
                   setSelectedId(q.id);

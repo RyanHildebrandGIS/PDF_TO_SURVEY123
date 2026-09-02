@@ -40,6 +40,13 @@ export interface BaseQuestion {
   label: string;
 }
 
+export interface ChoiceOption {
+  name: string;
+  label: string;
+}
+
+export type ChoiceLists = Record<string, ChoiceOption[]>;
+
 export interface JobStatus {
   id: string;
   template_id: string | null;

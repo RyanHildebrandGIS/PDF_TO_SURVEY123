@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Question, QuestionPatch, XLSFormType } from "../types";
+import type { ChoiceLists, Question, QuestionPatch, XLSFormType } from "../types";
 import "./QuestionRow.css";
 
 const TYPES: XLSFormType[] = [
@@ -18,12 +18,13 @@ const LOW_CONFIDENCE = 0.6;
 
 interface Props {
   question: Question;
+  choiceLists: ChoiceLists;
   selected: boolean;
   onSelect: () => void;
   onPatch: (patch: QuestionPatch) => void;
 }
 
-export function QuestionRow({ question: q, selected, onSelect, onPatch }: Props) {
+export function QuestionRow({ question: q, choiceLists, selected, onSelect, onPatch }: Props) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(q.label);
   const [name, setName] = useState(q.name);
@@ -93,15 +94,29 @@ export function QuestionRow({ question: q, selected, onSelect, onPatch }: Props)
         ))}
       </select>
 
-      {(q.type === "select_one" || q.type === "select_multiple") && (
-        <input
-          className="select q-row-list"
-          value={q.choice_list_id ?? ""}
-          placeholder="list name"
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => onPatch({ choice_list_id: e.target.value, confirmed: true })}
-        />
-      )}
+      {(q.type === "select_one" || q.type === "select_multiple") &&
+        (() => {
+          const listNames = Object.keys(choiceLists);
+          const current = q.choice_list_id ?? "";
+          const isUnknown = current !== "" && !listNames.includes(current);
+          return (
+            <select
+              className={`select q-row-list ${isUnknown ? "select-flag" : ""}`}
+              value={current}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => onPatch({ choice_list_id: e.target.value || null, confirmed: true })}
+              title={isUnknown ? `"${current}" isn't a list in this template yet — add it under Choice lists` : undefined}
+            >
+              <option value="">— pick a list —</option>
+              {isUnknown && <option value={current}>{current} (new, not saved)</option>}
+              {listNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          );
+        })()}
 
       {q.confirmed ? (
         <span className="text-soft">✓</span>

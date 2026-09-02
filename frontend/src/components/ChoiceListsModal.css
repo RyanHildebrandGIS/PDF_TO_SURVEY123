@@ -1,0 +1,80 @@
+.cl-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.cl-modal {
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  width: min(720px, 92vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cl-modal-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-6);
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.cl-modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: var(--sp-5) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.cl-list {
+  border: 1px solid var(--line);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.cl-list-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.cl-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.cl-option-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.cl-option-row .select:first-child {
+  width: 140px;
+}
+
+.cl-new-list {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  border-style: dashed;
+}
+
+.cl-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-6);
+  border-top: 1.5px dashed var(--line);
+}

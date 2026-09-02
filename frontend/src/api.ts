@@ -1,4 +1,4 @@
-import type { BaseQuestion, JobStatus, Question, QuestionPatch, TemplateMeta } from "./types";
+import type { BaseQuestion, ChoiceLists, JobStatus, Question, QuestionPatch, TemplateMeta } from "./types";
 
 // Empty string = relative to the current origin, i.e. "the backend serving this page".
 // Overridden for `npm run dev` via .env.development, where frontend and backend run
@@ -19,6 +19,18 @@ export function listTemplates(): Promise<TemplateMeta[]> {
 
 export function listBaseQuestions(templateId: string): Promise<BaseQuestion[]> {
   return fetch(`${API_BASE}/templates/${templateId}/base-questions`).then((r) => json(r));
+}
+
+export function getChoiceLists(templateId: string): Promise<ChoiceLists> {
+  return fetch(`${API_BASE}/templates/${templateId}/choice-lists`).then((r) => json(r));
+}
+
+export function saveChoiceLists(templateId: string, lists: ChoiceLists): Promise<TemplateMeta> {
+  return fetch(`${API_BASE}/templates/${templateId}/choice-lists`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lists }),
+  }).then((r) => json(r));
 }
 
 export function uploadTemplate(file: File): Promise<TemplateMeta> {

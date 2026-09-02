@@ -6,10 +6,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
-from .models import BaseQuestion, FileMeta, JobStatus, Question, QuestionPatch, StartJobRequest, TemplateMeta
+from .models import (
+    BaseQuestion,
+    ChoiceListsPayload,
+    ChoiceOption,
+    FileMeta,
+    JobStatus,
+    Question,
+    QuestionPatch,
+    StartJobRequest,
+    TemplateMeta,
+)
 from .pdf_extraction import detect_kind, extract_questions
 from .storage import ExportRecord, FileRecord, JobRecord, TemplateRecord, store
-from .xlsform import InvalidTemplateError, build_template_meta, export_workbook, list_base_questions
+from .xlsform import (
+    InvalidTemplateError,
+    build_template_meta,
+    export_workbook,
+    get_choice_lists,
+    list_base_questions,
+    set_choice_lists,
+)
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "templates")
 DEFAULT_TEMPLATE_ID = "caltrans_common_form_template"
@@ -57,6 +74,30 @@ def get_template_base_questions(template_id: str) -> list[BaseQuestion]:
     if record is None:
         raise HTTPException(status_code=404, detail="Template not found")
     return [BaseQuestion(**row) for row in list_base_questions(record.path)]
+
+
+@app.get("/templates/{template_id}/choice-lists", response_model=dict[str, list[ChoiceOption]])
+def get_template_choice_lists(template_id: str) -> dict[str, list[ChoiceOption]]:
+    record = store.templates.get(template_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+    raw = get_choice_lists(record.path)
+    return {list_name: [ChoiceOption(**opt) for opt in options] for list_name, options in raw.items()}
+
+
+@app.put("/templates/{template_id}/choice-lists", response_model=TemplateMeta)
+def put_template_choice_lists(template_id: str, payload: ChoiceListsPayload) -> TemplateMeta:
+    record = store.templates.get(template_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+    try:
+        lists = {name: [opt.model_dump() for opt in options] for name, options in payload.lists.items()}
+        set_choice_lists(record.path, lists)
+        meta = build_template_meta(template_id, record.meta.name, record.path)
+    except InvalidTemplateError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    store.templates[template_id] = TemplateRecord(meta=meta, path=record.path)
+    return meta
 
 
 @app.post("/templates", response_model=TemplateMeta)

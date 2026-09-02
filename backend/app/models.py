@@ -24,6 +24,15 @@ class BaseQuestion(BaseModel):
     label: str
 
 
+class ChoiceOption(BaseModel):
+    name: str
+    label: str
+
+
+class ChoiceListsPayload(BaseModel):
+    lists: dict[str, list[ChoiceOption]]
+
+
 class FileMeta(BaseModel):
     id: str
     name: str

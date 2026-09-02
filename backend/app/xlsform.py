@@ -168,6 +168,62 @@ def list_base_questions(template_path: str) -> list[dict[str, str]]:
     return rows
 
 
+def get_choice_lists(path: str) -> dict[str, list[dict[str, str]]]:
+    wb = openpyxl.load_workbook(path, data_only=True)
+    if "choices" not in wb.sheetnames:
+        return {}
+    ws = wb["choices"]
+    header = _header(ws)
+    col_idx = {h.lower(): i for i, h in enumerate(header)}
+    if "list_name" not in col_idx or "name" not in col_idx:
+        return {}
+    label_i = col_idx.get("label")
+
+    lists: dict[str, list[dict[str, str]]] = {}
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row or len(row) <= col_idx["list_name"]:
+            continue
+        list_name = row[col_idx["list_name"]]
+        if not list_name:
+            continue
+        list_name = str(list_name).strip()
+        name = row[col_idx["name"]] if len(row) > col_idx["name"] and row[col_idx["name"]] else ""
+        name = str(name).strip()
+        label_val = row[label_i] if label_i is not None and len(row) > label_i and row[label_i] else None
+        label = str(label_val).strip() if label_val else name
+        lists.setdefault(list_name, []).append({"name": name, "label": label})
+    return lists
+
+
+def set_choice_lists(path: str, lists: dict[str, list[dict[str, str]]]) -> None:
+    """Replace the entire contents of the choices sheet's data rows with `lists`
+    (list_name -> ordered options). Preserves the header row and any other
+    columns' positions; other columns are left blank for these rows."""
+    wb = openpyxl.load_workbook(path)
+    if "choices" not in wb.sheetnames:
+        raise InvalidTemplateError("Template workbook is missing a choices sheet")
+    ws = wb["choices"]
+    header = _header(ws)
+    col_idx = {h.lower(): i + 1 for i, h in enumerate(header)}
+    if "list_name" not in col_idx or "name" not in col_idx:
+        raise InvalidTemplateError("Template choices sheet must have list_name and name columns")
+    label_col = col_idx.get("label")
+
+    if ws.max_row > 1:
+        ws.delete_rows(2, ws.max_row - 1)
+
+    row_i = 2
+    for list_name, options in lists.items():
+        for opt in options:
+            ws.cell(row=row_i, column=col_idx["list_name"], value=list_name)
+            ws.cell(row=row_i, column=col_idx["name"], value=opt.get("name", ""))
+            if label_col:
+                ws.cell(row=row_i, column=label_col, value=opt.get("label") or opt.get("name", ""))
+            row_i += 1
+
+    wb.save(path)
+
+
 def export_workbook(template_path: str, questions: list[Question]) -> bytes:
     wb = openpyxl.load_workbook(template_path)
     if "survey" not in wb.sheetnames:
